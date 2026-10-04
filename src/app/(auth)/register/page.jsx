@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -23,7 +23,8 @@ const BUNDLES = [
   { name: "Diamond", priceWX: 200, pkr: 20000 },
 ];
 
-export default function RegisterPage() {
+// 1. Saara logic is component me
+function RegisterFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showPass, setShowPass] = useState(false);
@@ -37,11 +38,10 @@ export default function RegisterPage() {
     number: "",
     sponsorId: "",
     password: "",
-    bundleWX: 100, // Default Gold - PDF me most popular
+    bundleWX: 100,
     agree: false,
   });
 
-  //?ref=MF-10294 se auto sponsor
   useEffect(() => {
     const ref = searchParams.get("ref");
     if (ref) setFormData((prev) => ({ ...prev, sponsorId: ref }));
@@ -58,10 +58,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
     if (!formData.agree) return setError("Terms accept karna zaroori hai");
     if (formData.password.length < 6) return setError("Password min 6 chars");
-    console.log(formData);
     setLoading(true);
     try {
       const res = await fetch("/api/register", {
@@ -81,12 +79,10 @@ export default function RegisterPage() {
           },
         }),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Register failed");
-
       alert(
-        `Success! Registered with WX$ ${formData.bundleWX} (PKR ${formData.bundleWX * WX_RATE})`,
+        `Success! WX$ ${formData.bundleWX} (PKR ${formData.bundleWX * WX_RATE})`,
       );
       router.push("/login");
     } catch (err) {
@@ -98,7 +94,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex bg-[#f5f7fb]">
-      {/* Left - Branding */}
       <div className="hidden lg:flex w-[45%] bg-[#1E3A8A] relative flex-col justify-between p-10 text-white">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 bg-[#C5A059] rounded-lg flex items-center justify-center font-bold text-[#1E3A8A]">
@@ -135,7 +130,6 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      {/* Right - Form */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-10 overflow-y-auto">
         <div className="w-full max-w-[440px]">
           <div className="mb-6">
@@ -152,15 +146,12 @@ export default function RegisterPage() {
               </p>
             )}
           </div>
-
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl mb-4">
               {error}
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Bundle Selector - WX$ System */}
             <div>
               <label className="text-[11px] font-bold text-gray-600">
                 SELECT BUNDLE (WX$ = PKR)
@@ -179,7 +170,6 @@ export default function RegisterPage() {
                 ))}
               </select>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
                 <User
@@ -210,7 +200,6 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
-
             <div className="relative">
               <Mail
                 size={16}
@@ -226,7 +215,6 @@ export default function RegisterPage() {
                 className="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-200 text-sm bg-white focus:border-[#1E3A8A] outline-none"
               />
             </div>
-
             <div className="relative">
               <Phone
                 size={16}
@@ -241,7 +229,6 @@ export default function RegisterPage() {
                 className="w-full pl-10 pr-3 py-3 rounded-xl border border-gray-200 text-sm bg-white focus:border-[#1E3A8A] outline-none"
               />
             </div>
-
             <div className="relative">
               <Users
                 size={16}
@@ -255,7 +242,6 @@ export default function RegisterPage() {
                 className="w-full pl-10 pr-3 py-3 rounded-xl border border-[#C5A059]/50 bg-[#C5A059]/5 text-sm font-semibold text-[#8B6B2E] outline-none"
               />
             </div>
-
             <div className="relative">
               <Lock
                 size={16}
@@ -278,7 +264,6 @@ export default function RegisterPage() {
                 {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-
             <div className="flex items-center gap-2 text-[11px] text-gray-500">
               <input
                 type="checkbox"
@@ -286,13 +271,12 @@ export default function RegisterPage() {
                 checked={formData.agree}
                 onChange={handleChange}
                 className="rounded"
-              />
+              />{" "}
               I agree to{" "}
               <Link href="#" className="text-[#1E3A8A] font-semibold underline">
                 Terms
               </Link>
             </div>
-
             <button
               disabled={loading}
               type="submit"
@@ -309,7 +293,6 @@ export default function RegisterPage() {
               )}
             </button>
           </form>
-
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have account?{" "}
             <Link href="/login" className="text-[#1E3A8A] font-bold">
@@ -319,5 +302,20 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 2. Main Export - Suspense wrapper + dynamic
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#f5f7fb]">
+          <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
+      <RegisterFormContent />
+    </Suspense>
   );
 }

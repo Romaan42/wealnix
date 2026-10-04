@@ -12,12 +12,10 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "./loading";
 import { logoutUser } from "@/actions/userActions";
-import { checkLogin } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const router = useRouter();
-  const dispatch = useDispatch();
   const { user, userLoading } = useSelector((state) => state.user);
 
   const handleLogout = async () => {
