@@ -1,198 +1,284 @@
 "use client";
+import { useState, useEffect } from "react";
+import { DollarSign, Clock, CheckCircle } from "lucide-react";
+import { WX_RATE } from "@/config/wealnex.config";
+import PagesLoader from "@/components/PagesLoader";
 
-import { useState } from "react";
-
-export default function DepositPage() {
-  const [selectedMethod, setSelectedMethod] = useState("easypaisa");
-  const [amount, setAmount] = useState("");
+export default function DepositGatewayPage() {
+  const [data, setData] = useState({
+    wallet: { eWallet: 0, sWallet: 0 },
+    history: [],
+    stats: { total: 0, pending: 0, success: 0 },
+  });
+  const [amountPKR, setAmountPKR] = useState(2000);
+  const [method, setMethod] = useState("jazzcash");
   const [trxId, setTrxId] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const paymentMethods = {
-    easypaisa: {
-      title: "Easypaisa",
-      accountName: "Meta Force Admin",
-      accountNumber: "0300-1234567",
-      color: "border-green-500 bg-green-500/10 text-green-400",
-      badge: "Fast Approval",
-    },
-    jazzcash: {
-      title: "JazzCash",
-      accountName: "Meta Force Admin",
-      accountNumber: "0301-7654321",
-      color: "border-red-500 bg-red-500/10 text-red-400",
-      badge: "Instant",
-    },
-    bank: {
-      title: "Bank Transfer (Meezan Bank)",
-      accountName: "Meta Force Global Pvt Ltd",
-      accountNumber: "0102-0102938481",
-      iban: "PK36MEZN0001020102938481",
-      color: "border-blue-500 bg-blue-500/10 text-blue-400",
-      badge: "High Limits",
-    },
+  // REAL API FETCH
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const [walletRes, historyRes] = await Promise.all([
+          fetch("/api/wallet/balance", { cache: "no-store" }),
+          fetch("/api/deposit/history", { cache: "no-store" }),
+        ]);
+        const walletJson = await walletRes.json();
+        const historyJson = await historyRes.json();
+
+        setData({
+          wallet: walletJson.wallet || { eWallet: 0, sWallet: 0 },
+          history: historyJson.history || [],
+          stats: historyJson.stats || { total: 0, pending: 0, success: 0 },
+        });
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const wxAmount = Math.floor(amountPKR / WX_RATE); // REAL FORMULA: 100 PKR = 1 WX$
+
+  const handleSubmit = async () => {
+    if (amountPKR < 500) return alert("Minimum 500 PKR");
+    if (!trxId.trim()) return alert("Please enter Transaction ID");
+
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/deposit/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amountPKR, method, trxId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+
+      alert(`Success! ${json.youWillGet} will be added after admin approval.`);
+      setTrxId("");
+      // Refresh history
+      const historyRes = await fetch("/api/deposit/history");
+      const historyJson = await historyRes.json();
+      setData((d) => ({
+        ...d,
+        history: historyJson.history,
+        stats: historyJson.stats,
+      }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!amount || !trxId) return;
-    setSubmitted(true);
-  };
+  if (loading) return <PagesLoader />;
+
+  const methods = [
+    {
+      id: "jazzcash",
+      name: "JazzCash",
+      desc: "Pay via JazzCash mobile wallet • Instant",
+      acc: "0300-1234567 (Wealnex)",
+    },
+    {
+      id: "easypaisa",
+      name: "EasyPaisa",
+      desc: "Pay via EasyPaisa mobile wallet • Instant",
+      acc: "0345-1234567 (Wealnex)",
+    },
+    {
+      id: "usdt",
+      name: "USDT (TRC20)",
+      desc: "Crypto deposit via USDT • Min 10 USDT",
+      acc: "TXyz...Abc123 (TRC20)",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8">
-      <div className="max-w-3xl mx-auto space-y-8">
-        {/* Header Title */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-emerald-400">
-            Local Payment Deposit
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Deposit PKR via Easypaisa, JazzCash, or Bank Transfer to activate
-            your Matrix Slots.
-          </p>
-        </div>
+    <div className="p-4 w-full lg:p-6 space-y-6 bg-[#f5f7fb] min-h-screen">
+      {/* Top Blue Card */}
+      <div className="bg-[#1E3A8A] rounded-2xl p-6 text-white">
+        <h2 className="text-xl font-bold">Deposit Gateway</h2>
+        <p className="text-[11px] text-white/60 uppercase tracking-widest mt-1">
+          eWallet: {data.wallet.eWallet} WX$ • sWallet: {data.wallet.sWallet}{" "}
+          WX$ • Rate 1 WX$ = {WX_RATE} PKR
+        </p>
 
-        {/* Step 1: Select Payment Gateway */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4 shadow-xl">
-          <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-            1. Select Payment Method
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {Object.keys(paymentMethods).map((method) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="bg-white rounded-2xl p-5 text-black">
+            <DollarSign size={18} className="text-[#1E3A8A]" />
+            <p className="text-[11px] font-bold text-gray-400 uppercase mt-2">
+              TOTAL DEPOSITED
+            </p>
+            <h3 className="text-2xl font-bold">{data.stats.total} PKR</h3>
+            <p className="text-[11px] text-green-600 mt-1">
+              ≈ {Math.floor(data.stats.total / WX_RATE)} WX$
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-5 text-black">
+            <Clock size={18} className="text-[#C5A059]" />
+            <p className="text-[11px] font-bold text-gray-400 uppercase mt-2">
+              PENDING
+            </p>
+            <h3 className="text-2xl font-bold">{data.stats.pending} PKR</h3>
+            <p className="text-[11px] text-gray-500 mt-1">
+              {data.history.filter((h) => h.status === "pending").length}{" "}
+              processing
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-5 text-black">
+            <CheckCircle size={18} className="text-green-600" />
+            <p className="text-[11px] font-bold text-gray-400 uppercase mt-2">
+              SUCCESSFUL
+            </p>
+            <h3 className="text-2xl font-bold">{data.stats.success} PKR</h3>
+            <p className="text-[11px] text-gray-500 mt-1">
+              {data.history.filter((h) => h.status === "approved").length}{" "}
+              completed
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left - Form */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border shadow-sm overflow-hidden">
+          <div className="p-5 border-b">
+            <h2 className="font-bold text-lg">Deposit Funds</h2>
+            <p className="text-sm font-semibold mt-3">Select Payment Method</p>
+          </div>
+
+          <div className="p-5 space-y-3">
+            {methods.map((m) => (
               <button
-                key={method}
-                type="button"
-                onClick={() => setSelectedMethod(method)}
-                className={`p-4 rounded-xl border text-left transition-all ${
-                  selectedMethod === method
-                    ? paymentMethods[method].color
-                    : "border-slate-800 bg-slate-950 hover:border-slate-700 text-slate-400"
-                }`}
+                key={m.id}
+                onClick={() => setMethod(m.id)}
+                className={`w-full text-left p-4 rounded-xl border-2 flex justify-between items-center transition ${method === m.id ? "border-[#1E3A8A] bg-[#1E3A8A]/5" : "border-gray-200 bg-white"}`}
               >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-bold text-white text-base">
-                    {paymentMethods[method].title.split(" ")[0]}
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                    {paymentMethods[method].badge}
-                  </span>
+                <div>
+                  <p className="font-bold text-sm">
+                    {m.name} •{" "}
+                    <span className="font-mono text-[11px]">{m.acc}</span>
+                  </p>
+                  <p className="text-[12px] text-gray-500 mt-0.5">{m.desc}</p>
                 </div>
-                <span className="text-xs text-slate-400">
-                  Local PKR Transfer
-                </span>
+                {method === m.id && (
+                  <div className="w-6 h-6 bg-[#1E3A8A] rounded-full flex items-center justify-center text-white text-xs">
+                    ✓
+                  </div>
+                )}
               </button>
             ))}
-          </div>
-        </div>
 
-        {/* Step 2: Account Details Box */}
-        <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-5 space-y-3 bg-gradient-to-br from-slate-900 to-slate-900/50">
-          <h2 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-            Send Payment to this Account
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm pt-1">
-            <div>
-              <p className="text-slate-400 text-xs">Account Title</p>
-              <p className="font-bold text-slate-100">
-                {paymentMethods[selectedMethod].accountName}
-              </p>
-            </div>
-            <div>
-              <p className="text-slate-400 text-xs">Account / Mobile Number</p>
-              <p className="font-mono font-bold text-emerald-300 text-base">
-                {paymentMethods[selectedMethod].accountNumber}
-              </p>
-            </div>
-            {paymentMethods[selectedMethod].iban && (
-              <div className="sm:col-span-2">
-                <p className="text-slate-400 text-xs">IBAN Number</p>
-                <p className="font-mono text-slate-200 text-xs">
-                  {paymentMethods[selectedMethod].iban}
+            <div className="pt-4 space-y-3">
+              <div>
+                <p className="font-bold text-sm mb-2">
+                  Enter Deposit Amount (PKR)
                 </p>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amountPKR}
+                    onChange={(e) => setAmountPKR(Number(e.target.value))}
+                    className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 pr-16 outline-none focus:border-[#1E3A8A] font-bold"
+                  />
+                  <span className="absolute right-4 top-3.5 text-sm text-gray-500">
+                    PKR
+                  </span>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  {[2000, 5000, 10000, 20000].map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setAmountPKR(v)}
+                      className="text-xs bg-gray-100 px-3 py-1.5 rounded-full hover:bg-[#1E3A8A] hover:text-white"
+                    >
+                      {v / 1000}k
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
+
+              <div>
+                <p className="font-bold text-sm mb-2">Transaction ID (TrxID)</p>
+                <input
+                  value={trxId}
+                  onChange={(e) => setTrxId(e.target.value)}
+                  placeholder="JC1234567890 ya Txn Hash"
+                  className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-[#1E3A8A] text-sm"
+                />
+              </div>
+
+              {/* REAL CONVERSION - FIXED */}
+              <div className="bg-[#C5A059]/15 border border-[#C5A059]/30 rounded-xl p-4 flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-gray-600">You will receive</p>
+                  <p className="text-xl font-bold text-[#8B6B2E]">
+                    {wxAmount} WX$
+                  </p>
+                  <p className="text-[11px] text-gray-500">
+                    {amountPKR} PKR / {WX_RATE}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-600">Conversion Rate:</p>
+                  <p className="text-xs font-bold">1 WX$ = {WX_RATE} PKR</p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="w-full mt-2 bg-[#C5A059] text-white font-bold py-3.5 rounded-xl hover:bg-[#A88645] transition disabled:opacity-50"
+              >
+                {submitting
+                  ? "Submitting..."
+                  : `Submit Deposit for ${wxAmount} WX$`}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Step 3: Deposit Form */}
-        {submitted ? (
-          <div className="bg-emerald-500/10 border border-emerald-500/40 rounded-xl p-6 text-center space-y-3">
-            <div className="text-3xl">✅</div>
-            <h3 className="text-lg font-bold text-emerald-400">
-              Deposit Request Submitted!
-            </h3>
-            <p className="text-slate-300 text-sm max-w-md mx-auto">
-              Your transaction ID{" "}
-              <span className="font-mono text-white bg-slate-900 px-2 py-1 rounded">
-                {trxId}
-              </span>{" "}
-              is under manual verification by admin. Slots will activate
-              shortly.
-            </p>
-            <button
-              onClick={() => setSubmitted(false)}
-              className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded-lg"
-            >
-              Submit Another Deposit
-            </button>
+        {/* Right - History */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border shadow-sm p-5">
+            <h3 className="font-bold text-lg">Recent Deposits</h3>
+            <div className="mt-4 space-y-3 max-h-[400px] overflow-y-auto">
+              {data.history.length === 0 && (
+                <p className="text-xs text-gray-500 text-center py-6">
+                  No deposits yet
+                </p>
+              )}
+              {data.history.slice(0, 10).map((h, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between text-[12px] border-b border-gray-100 pb-2 last:border-0"
+                >
+                  <div>
+                    <p className="font-bold">
+                      {h.amountWX} WX${" "}
+                      <span className="font-normal text-gray-500">
+                        ({h.amountPKR} PKR)
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-gray-500">
+                      {new Date(h.createdAt).toLocaleDateString()} • {h.method}
+                    </p>
+                  </div>
+                  <span
+                    className={`h-fit px-2 py-1 rounded-full text-[10px] font-bold ${h.status === "approved" ? "bg-green-100 text-green-700" : h.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}
+                  >
+                    {h.status}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-5"
-          >
-            <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-              2. Enter Transaction Details
-            </h2>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">
-                Deposit Amount (PKR)
-              </label>
-              <input
-                type="number"
-                required
-                placeholder="e.g. 3500"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">
-                Transaction ID (TrxID / Ref No.)
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. 92837102938"
-                value={trxId}
-                onChange={(e) => setTrxId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">
-                Payment Proof Screenshot (Optional)
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                className="w-full text-xs text-slate-400 bg-slate-950 border border-slate-800 rounded-lg p-2 cursor-pointer file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-slate-800 file:text-slate-300 file:text-xs"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-lg text-sm transition-all shadow-lg shadow-emerald-500/20"
-            >
-              Submit Deposit Request
-            </button>
-          </form>
-        )}
+        </div>
       </div>
     </div>
   );
