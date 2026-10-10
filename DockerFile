@@ -1,0 +1,19 @@
+FROM node
+
+
+WORKDIR /app
+
+# Pehle package.json copy karo taake cache bane
+COPY package.json package-lock.json* ./
+
+RUN npm install
+
+# Fir pura code copy karo
+COPY . .
+
+# Next.js build
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]

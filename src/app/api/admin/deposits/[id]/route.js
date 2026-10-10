@@ -1,5 +1,4 @@
-// app/api/admin/deposits/[id]/route.js
-import dbConnect from "@/lib/db";
+import connectDb from "@/lib/db";
 import Deposit from "@/models/Deposit";
 import User from "@/models/User";
 import mongoose from "mongoose";
@@ -8,8 +7,8 @@ export async function PUT(req, { params }) {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    await dbConnect();
-    const { id } = params;
+    await connectDb();
+    const { id } = await params;
     const body = await req.json();
     const { action, adminNote } = body; // action: 'approved' | 'rejected'
 
