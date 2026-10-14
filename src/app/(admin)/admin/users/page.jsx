@@ -1,5 +1,7 @@
 // app/admin/users/page.jsx
 "use client";
+import { deleteUser } from "@/actions/adminActions";
+import { Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -70,6 +72,18 @@ export default function AdminUsersPage() {
     await handleAction(selectedUser._id, "wallet", walletForm);
   };
 
+  const handleDeleteUser = async (id) => {
+    if (confirm("do you want to delete the user")) {
+      setLoading(true);
+      const res = await deleteUser(id);
+      setLoading(false);
+      if (res.success) {
+        toast.success(res.message);
+        fetchUsers();
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Toaster position="top-right" />
@@ -124,6 +138,7 @@ export default function AdminUsersPage() {
                   <th className="py-3 px-4">Wallet</th>
                   <th className="py-3 px-4">Bundle / Rank / Team</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Delete</th>
                   <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
@@ -180,6 +195,12 @@ export default function AdminUsersPage() {
                       >
                         {u.status}
                       </span>
+                    </td>
+                    <td
+                      className="py-3 px-4 text-right cursor-pointer"
+                      onClick={() => handleDeleteUser(u._id)}
+                    >
+                      <Trash className="text-red-500" />
                     </td>
                     <td className="py-3 px-4 text-right">
                       <button
