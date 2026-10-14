@@ -2,6 +2,7 @@ import connectDb from "@/lib/db";
 import User from "@/models/User";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 export const POST = async (request) => {
   try {
@@ -17,6 +18,14 @@ export const POST = async (request) => {
       return Response.json(
         { success: false, message: "user not found" },
         { status: 404 },
+      );
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return Response.json(
+        { success: false, message: "password is wrong" },
+        { status: 401 },
       );
     }
 

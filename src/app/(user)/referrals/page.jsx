@@ -145,8 +145,7 @@ export default function ReferralsPage() {
             <thead className="bg-gray-50 text-[11px] font-bold text-gray-400 uppercase">
               <tr>
                 <th className="p-3 text-left">User</th>
-                <th className="p-3">Bundle</th>
-                <th className="p-3">Investment</th>
+                <th className="p-3">Purchaise</th>
                 <th className="p-3">Status</th>
                 <th className="p-3">Joined</th>
               </tr>
@@ -165,7 +164,7 @@ export default function ReferralsPage() {
                       {r.bundle} WX$
                     </span>
                   </td>
-                  <td className="p-3 text-center font-bold">${r.investment}</td>
+                  {/* <td className="p-3 text-center font-bold">${r.investment}</td> */}
                   <td className="p-3 text-center">
                     <span
                       className={`px-2 py-1 rounded-full text-[11px] font-bold ${r.status === "active" ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"}`}

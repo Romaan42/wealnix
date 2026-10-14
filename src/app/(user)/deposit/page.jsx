@@ -11,6 +11,7 @@ import {
   Diamond,
 } from "lucide-react";
 import PagesLoader from "@/components/PagesLoader";
+import toast from "react-hot-toast";
 
 const WX_RATE = 100;
 
@@ -132,7 +133,7 @@ export default function DepositGatewayPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
 
-      alert(
+      toast.success(
         `Success! ${selectedBundle.name} Bundle (${selectedBundle.priceWX} WX$) request submitted. You will get ${selectedBundle.vp} VP after approval.`,
       );
       setTrxId("");
@@ -144,7 +145,7 @@ export default function DepositGatewayPage() {
         stats: historyJson.stats,
       }));
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }

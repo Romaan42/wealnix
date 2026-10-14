@@ -13,6 +13,7 @@ import {
   Users,
   Loader2,
 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,13 +57,14 @@ export default function LoginPage() {
     if (result.success) {
       router.push("/");
     } else {
-      alert(result.message);
+      toast.error(result.message);
     }
   };
 
   return (
     <div className="min-h-screen flex bg-[#f5f7fb]">
       {/* Left - Same Branding */}
+      <Toaster />
       <div className="hidden lg:flex w-[45%] bg-[#1E3A8A] relative flex-col justify-between p-10 text-white">
         <div>
           <div className="flex items-center gap-2">

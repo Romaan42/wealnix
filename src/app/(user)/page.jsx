@@ -132,9 +132,9 @@ export default function Dashboard({ setSidebarOpen }) {
         <div className="bg-[#0f172a] rounded-[22px] p-5 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#C5A059]/20 rounded-full blur-[30px]"></div>
           <div>
-            <p className="text-[11px] text-white/60">E-Wallet (80%)</p>
+            <p className="text-[11px] text-white/60">E-Wallet</p>
             <h3 className="text-[24px] font-bold mt-1">
-              WX${(wallet.eWallet || 0).toLocaleString()}
+              WX$ {(wallet.eWallet || 0).toLocaleString()}
             </h3>
             <p className="text-[10px] text-white/40">
               PKR {((wallet.eWallet || 0) * 100).toLocaleString()}
@@ -150,16 +150,16 @@ export default function Dashboard({ setSidebarOpen }) {
 
         <div className="bg-white rounded-[22px] border p-5 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-[11px] text-gray-500">S-Wallet (20%)</p>
+            <p className="text-[11px] text-gray-500">S-Wallet</p>
             <h3 className="text-[24px] font-bold text-[#0f172a] mt-1">
-              WX${(wallet.sWallet || 0).toLocaleString()}
+              WX$ {(wallet.sWallet || 0).toLocaleString()}
             </h3>
             <p className="text-[10px] text-gray-400 mt-1">
               Locked till 500 WX$
             </p>
           </div>
           <p className="text-[11px] text-gray-400 mt-2 pt-2 border-t">
-            Total: WX${(wallet.total || 0).toLocaleString()}
+            Total: WX$ {(wallet.total || 0).toLocaleString()}
           </p>
         </div>
 
@@ -169,7 +169,7 @@ export default function Dashboard({ setSidebarOpen }) {
               Total Deposits
             </p>
             <h3 className="text-[22px] font-bold text-[#0f172a] mt-1">
-              WX${(stats.totalDepositsWX || 0).toLocaleString()}
+              WX$ {(stats.totalDepositsWX || 0).toLocaleString()}
             </h3>
           </div>
           <p className="text-[10px] text-gray-400 mt-2 pt-2 border-t">

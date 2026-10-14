@@ -71,7 +71,6 @@ function RegisterFormContent() {
           number: formData.number,
           sponsorUserName: formData.sponsorId,
           password: formData.password,
-          bundlePriceWX: Number(formData.bundleWX),
           plan: {
             name: BUNDLES.find((b) => b.priceWX == formData.bundleWX)?.name,
             price: Number(formData.bundleWX),
@@ -80,10 +79,7 @@ function RegisterFormContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Register failed");
-      alert(
-        `Success! WX$ ${formData.bundleWX} (PKR ${formData.bundleWX * WX_RATE})`,
-      );
-      router.push("/login");
+      return router.push("/login");
     } catch (err) {
       setError(err.message);
     } finally {

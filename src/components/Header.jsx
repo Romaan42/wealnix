@@ -24,7 +24,7 @@ const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Network Summary", href: "/network-summary", icon: Network },
   { label: "My Referrals", href: "/referrals", icon: Users },
-  { label: "Deposit Gateway", href: "/deposit", icon: Landmark },
+  { label: "Deposit", href: "/deposit", icon: Landmark },
   { label: "Withdraw Funds", href: "/withdraw-funds", icon: Banknote },
   { label: "Corporate Support", href: "/corporate-support", icon: Headset },
   { label: "Profile Settings", href: "/profile-settings", icon: Settings },

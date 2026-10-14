@@ -91,7 +91,7 @@ export default function NetworkSummaryPage() {
               onClick={() => setActiveLevel(lvl.level)}
               className={`px-4 py-2 rounded-xl text-sm font-bold ${activeLevel === lvl.level ? "bg-[#1E3A8A] text-white" : "bg-gray-100"}`}
             >
-              L{lvl.level} ({lvl.count}) {lvl.percent}%
+              L{lvl.level} ({lvl.count}) {lvl.percent}
             </button>
           ))}
         </div>
@@ -108,7 +108,7 @@ export default function NetworkSummaryPage() {
           </div>
           <div className="bg-[#f5f7fb] p-3 rounded-xl">
             <p className="text-[10px] text-gray-400 uppercase">Percent</p>
-            <p className="font-bold text-[#C5A059]">{activeData.percent}%</p>
+            <p className="font-bold text-[#C5A059]">{activeData.percent}</p>
           </div>
         </div>
         <div className="overflow-x-auto">
