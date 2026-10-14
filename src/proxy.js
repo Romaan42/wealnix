@@ -6,15 +6,30 @@ import checkUserLogin from "./lib/checkUserLogin";
 export async function proxy(request) {
   const url = request.nextUrl.pathname;
 
-  const user = await checkUserLogin();
-  const admin = await checkAdminLogin();
-
-  if (url.startsWith("/") && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Public routes jinko check nahi karna
+  if (
+    url === "/login" ||
+    url === "/admin-login" ||
+    url.startsWith("/api") ||
+    url.startsWith("/_next") ||
+    url.startsWith("/favicon")
+  ) {
+    return NextResponse.next();
   }
 
-  if (!admin && url.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/admin-login", request.url));
+  // Admin routes
+  if (url.startsWith("/admin")) {
+    const admin = await checkAdminLogin();
+    if (!admin) {
+      return NextResponse.redirect(new URL("/admin-login", request.url));
+    }
+  }
+  // User routes - sab "/" se start hote hain
+  else {
+    const user = await checkUserLogin();
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
   return NextResponse.next();

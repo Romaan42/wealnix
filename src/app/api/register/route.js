@@ -1,44 +1,18 @@
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import {
-  BUNDLES,
-  COMMISSION_TABLE,
-  WALLET_SPLIT,
-  RANKS,
-  WX_RATE,
-} from "@/config/wealnex.config";
 import connectDb from "@/lib/db";
-
-function getRankByVP(vp) {
-  // Highest to lowest check
-  const sorted = [...RANKS].sort((a, b) => b.vp - a.vp);
-  for (const r of sorted) {
-    if (vp >= r.vp) return r.name;
-  }
-  return "Beginner";
-}
 
 export async function POST(req) {
   await connectDb();
-  const {
-    name,
-    userName,
-    sponsorUserName,
-    email,
-    number,
-    password,
-    bundlePriceWX,
-  } = await req.json();
+  const { name, userName, sponsorUserName, email, number, password } =
+    await req.json();
 
-  const bundle = Object.values(BUNDLES).find(
-    (b) => b.priceWX === bundlePriceWX,
-  );
-  if (!bundle)
-    return Response.json({ error: "Invalid Bundle" }, { status: 400 });
-
-  if (!userName || !email || !password) {
-    return Response.json({ error: "Missing fields" }, { status: 400 });
+  if (!userName || !email || !password || !number) {
+    return Response.json(
+      { error: "Missing fields: userName, email, number, password required" },
+      { status: 400 },
+    );
   }
 
   const session = await mongoose.startSession();
@@ -60,6 +34,7 @@ export async function POST(req) {
       sponsor = await User.findOne({
         userName: sponsorUserName.toLowerCase(),
       }).session(session);
+
       if (!sponsor) throw new Error("Invalid Sponsor Username");
       ancestors = [sponsor._id, ...sponsor.ancestors].slice(0, 5);
     }
@@ -76,7 +51,7 @@ export async function POST(req) {
           password: hashed,
           sponsor: sponsor?._id || null,
           ancestors,
-          currentBundle: bundlePriceWX,
+          currentBundle: 0, // No bundle
           volumePoints: 0,
           rank: "Beginner",
           wallet: { eWallet: 0, sWallet: 0, totalWithdrawn: 0 },
@@ -86,67 +61,32 @@ export async function POST(req) {
       { session },
     );
 
-    // COMMISSION DISTRIBUTION - PDF Page 2 & 5
-    const commissions = COMMISSION_TABLE[bundlePriceWX]; // {L1:35, L2:12...}
-    let companyRetentionWX = bundlePriceWX;
+    // Sirf team counts update karo, koi commission / bundle nahi
+    if (sponsor) {
+      for (let i = 0; i < ancestors.length; i++) {
+        const level = i + 1;
+        const incObj = {
+          "stats.totalTeam": 1,
+        };
+        if (level === 1) incObj["stats.directTeam"] = 1;
 
-    for (let i = 0; i < ancestors.length; i++) {
-      const level = i + 1;
-      const commissionWX = commissions[`L${level}`];
-      if (!commissionWX) continue;
-
-      companyRetentionWX -= commissionWX;
-
-      const eWX = commissionWX * WALLET_SPLIT.E_WALLET; // 80%
-      const sWX = commissionWX * WALLET_SPLIT.S_WALLET; // 20%
-
-      // VP Engine: L1 = 100% VP, L2-L5 = 50% VP - PDF Page 1
-      const vpCredit = level === 1 ? bundle.vp : bundle.vp * 0.5;
-
-      const incObj = {
-        "wallet.eWallet": eWX,
-        "wallet.sWallet": sWX,
-        volumePoints: vpCredit,
-        "stats.totalTeam": 1,
-        "stats.totalTeamSalesWX": bundlePriceWX,
-      };
-      if (level === 1) incObj["stats.directTeam"] = 1;
-
-      const updatedUpline = await User.findByIdAndUpdate(
-        ancestors[i],
-        { $inc: incObj },
-        { session, new: true },
-      );
-
-      // Rank auto-update
-      if (updatedUpline) {
-        const newRank = getRankByVP(updatedUpline.volumePoints);
-        if (newRank !== updatedUpline.rank) {
-          await User.findByIdAndUpdate(
-            ancestors[i],
-            { rank: newRank },
-            { session },
-          );
-        }
+        await User.findByIdAndUpdate(
+          ancestors[i],
+          { $inc: incObj },
+          { session },
+        );
       }
     }
 
-    // TODO: Company Ledger mein companyRetentionWX save karo
-    // await CompanyLedger.create([{ saleWX: bundlePriceWX, retentionWX: companyRetentionWX, buyer: newUser._id }], { session })
-
     await session.commitTransaction();
 
-    // Password hata ke response
     const safeUser = newUser.toObject();
     delete safeUser.password;
 
     return Response.json({
       success: true,
       user: safeUser,
-      bundle: bundle.name,
-      companyRetentionWX,
-      companyRetentionPKR: companyRetentionWX * WX_RATE,
-      message: `Registration successful with ${bundle.name} Bundle`,
+      message: "Registration successful",
     });
   } catch (e) {
     await session.abortTransaction();

@@ -17,7 +17,7 @@ const userSchema = mongoose.Schema(
 
     currentBundle: { type: Number, default: 0 }, // 20,50,100,150,200
     volumePoints: { type: Number, default: 0 }, // VP for rank
-    rank: { type: String, default: "Beginner" },
+    rank: { type: String, default: null },
 
     // Wallet sab WX$ me store hoga
     wallet: {

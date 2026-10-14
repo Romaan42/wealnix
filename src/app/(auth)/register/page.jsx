@@ -38,7 +38,6 @@ function RegisterFormContent() {
     number: "",
     sponsorId: "",
     password: "",
-    bundleWX: 100,
     agree: false,
   });
 
@@ -58,7 +57,7 @@ function RegisterFormContent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!formData.agree) return setError("Terms accept karna zaroori hai");
+    if (!formData.agree) return setError("please Accecpt the Terms");
     if (formData.password.length < 6) return setError("Password min 6 chars");
     setLoading(true);
     try {
@@ -152,7 +151,7 @@ function RegisterFormContent() {
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+            {/* <div>
               <label className="text-[11px] font-bold text-gray-600">
                 SELECT BUNDLE (WX$ = PKR)
               </label>
@@ -169,7 +168,7 @@ function RegisterFormContent() {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
                 <User

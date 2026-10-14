@@ -1,10 +1,9 @@
-// app/api/admin/deposits/route.js
-import dbConnect from "@/lib/db";
+import connectDb from "@/lib/db";
 import Deposit from "@/models/Deposit";
 
 export async function GET(req) {
   try {
-    await dbConnect();
+    await connectDb();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") || "pending"; // pending, approved, rejected, all
 

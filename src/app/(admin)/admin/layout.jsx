@@ -12,9 +12,11 @@ import {
   Ticket,
   BookOpen,
   BarChart3,
+  LogOut,
 } from "lucide-react";
 import connectDb from "@/lib/db";
 import "../../globals.css";
+import AdminLogoutBtn from "@/components/AdminLogoutBtn";
 
 export const dynamic = "force-dynamic";
 
@@ -142,6 +144,8 @@ export default async function AdminLayout({ children }) {
             </div>
 
             <div className="border-t border-white/10 pt-4">
+              {/* LOGOUT BUTTON */}
+              <AdminLogoutBtn />
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-black font-bold">
                   A

@@ -3,38 +3,63 @@ import checkUserLogin from "@/lib/checkUserLogin";
 import Deposit from "@/models/Deposit";
 import { WX_RATE } from "@/config/wealnex.config";
 
+const BUNDLES = {
+  20: { priceWX: 20, pricePKR: 2000, vp: 2, name: "Starter" },
+  50: { priceWX: 50, pricePKR: 5000, vp: 5, name: "Silver" },
+  100: { priceWX: 100, pricePKR: 10000, vp: 10, name: "Gold" },
+  150: { priceWX: 150, pricePKR: 15000, vp: 15, name: "Platinum" },
+  200: { priceWX: 200, pricePKR: 20000, vp: 20, name: "Diamond" },
+};
+
 export async function POST(req) {
-  await connectDb();
-  const auth = await checkUserLogin();
-  if (!auth) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await connectDb();
+    const auth = await checkUserLogin();
+    if (!auth) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { amountPKR, method, trxId } = await req.json();
+    const { bundlePriceWX, method, trxId } = await req.json();
 
-  if (!amountPKR || amountPKR < 500) {
-    return Response.json(
-      { error: "Min deposit 500 PKR (5 WX$)" },
-      { status: 400 },
-    );
+    // FIX: Sirf bundlePriceWX se validate karo, amountPKR/WX frontend se mat lo
+    const bundle = BUNDLES[Number(bundlePriceWX)];
+    if (!bundle) {
+      return Response.json(
+        { error: "Invalid Bundle. Valid: 20,50,100,150,200" },
+        { status: 400 },
+      );
+    }
+
+    if (!trxId || trxId.trim().length < 5) {
+      return Response.json({ error: "Valid TrxID required" }, { status: 400 });
+    }
+
+    const existsTrx = await Deposit.findOne({ trxId: trxId.trim() });
+    if (existsTrx) {
+      return Response.json(
+        { error: "This TrxID already used" },
+        { status: 400 },
+      );
+    }
+
+    // NO SESSION - Direct create (fix for replica set error)
+    const dep = await Deposit.create({
+      user: auth._id,
+      amountPKR: bundle.pricePKR, // FIX: Fixed value, ghat nahi hogi
+      amountWX: bundle.priceWX, // FIX: Fixed 20,50,100...
+      bundleName: bundle.name,
+      bundleVP: bundle.vp,
+      method: method || "jazzcash",
+      trxId: trxId.trim(),
+      status: "pending",
+    });
+
+    return Response.json({
+      success: true,
+      message: `Deposit request for ${bundle.name} Bundle submitted.`,
+      deposit: dep,
+      youWillGet: `${bundle.priceWX} WX$ + ${bundle.vp} VP after approval`,
+    });
+  } catch (e) {
+    console.error("Deposit Request Error:", e);
+    return Response.json({ error: e.message }, { status: 500 });
   }
-  if (amountPKR > 50000) {
-    return Response.json({ error: "Max deposit 50,000 PKR" }, { status: 400 });
-  }
-
-  const amountWX = amountPKR / WX_RATE;
-
-  const dep = await Deposit.create({
-    user: auth._id,
-    amountPKR,
-    amountWX,
-    method: method || "jazzcash",
-    trxId,
-    status: "pending",
-  });
-
-  return Response.json({
-    success: true,
-    message: "Deposit request submitted. Admin will verify in 10-30 min.",
-    deposit: dep,
-    youWillGet: `${amountWX} WX$`,
-  });
 }
