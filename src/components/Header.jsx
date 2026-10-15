@@ -13,6 +13,7 @@ import {
   X,
   Menu,
   LogOut,
+  BanknoteArrowUp,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Network Summary", href: "/network-summary", icon: Network },
   { label: "My Referrals", href: "/referrals", icon: Users },
+  { label: "Transactions", href: "/transactions", icon: BanknoteArrowUp },
   { label: "Deposit", href: "/deposit", icon: Landmark },
   { label: "Withdraw Funds", href: "/withdraw-funds", icon: Banknote },
   { label: "Corporate Support", href: "/corporate-support", icon: Headset },

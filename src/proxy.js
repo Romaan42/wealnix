@@ -27,7 +27,7 @@ export async function proxy(request) {
   // User routes - sab "/" se start hote hain
   else {
     const user = await checkUserLogin();
-    if (!user) {
+    if (!user && url !== "/register") {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }
@@ -36,11 +36,5 @@ export async function proxy(request) {
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/dashboard/:path*",
-    "/wallet/:path*",
-    "/profile/:path*",
-    "/admin/:path*",
-  ],
+  matcher: ["/:path*", "/wallet/:path*", "/profile/:path*", "/admin/:path*"],
 };

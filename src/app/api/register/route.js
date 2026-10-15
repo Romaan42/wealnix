@@ -35,8 +35,15 @@ export async function POST(req) {
         userName: sponsorUserName.toLowerCase(),
       }).session(session);
 
-      if (!sponsor) throw new Error("Invalid Sponsor Username");
-      ancestors = [sponsor._id, ...sponsor.ancestors].slice(0, 5);
+      // if (!sponsor || sponsor.currentBundle <= 0)
+      //   throw new Error(
+      //     "Invalid Sponsor Username or Sponsor user not selected plan",
+      //   );
+      if (!sponsor || sponsor.currentBundle <= 0) {
+        ancestors = [];
+      } else {
+        ancestors = [sponsor._id, ...sponsor.ancestors].slice(0, 5);
+      }
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -89,6 +96,7 @@ export async function POST(req) {
       message: "Registration successful",
     });
   } catch (e) {
+    console.log("ERROR", e);
     await session.abortTransaction();
     return Response.json({ error: e.message }, { status: 500 });
   } finally {

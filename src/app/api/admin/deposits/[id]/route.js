@@ -1,6 +1,7 @@
 import connectDb from "@/lib/db";
 import Deposit from "@/models/Deposit";
 import User from "@/models/User";
+import Transaction from "@/models/Transaction";
 
 const COMMISSION_TABLE = {
   20: { L1: 6, L2: 2.4, L3: 1.4, L4: 0.8, L5: 0.4 },
@@ -46,7 +47,6 @@ export async function PUT(req, { params }) {
         { status: 404 },
       );
     }
-
     if (deposit.status !== "pending") {
       return Response.json(
         { success: false, error: `Already ${deposit.status}` },
@@ -56,30 +56,53 @@ export async function PUT(req, { params }) {
 
     if (action === "approved") {
       const buyer = await User.findById(deposit.user);
-      if (!buyer) throw new Error("Buyer user not found");
+      if (!buyer) throw new Error(`Buyer not found for ID ${deposit.user}`);
 
       const bundleWX = deposit.amountWX;
       const bundleVP = bundleWX / 10;
       const commissions = COMMISSION_TABLE[bundleWX];
       if (!commissions) throw new Error(`Invalid bundle WX$ ${bundleWX}`);
 
-      // FIX 1: BLUEPRINT 80/20 WALLET SPLIT + COMPANY RETENTION
+      console.log(
+        `[APPROVE] Buyer: ${buyer.name || buyer.userName} | Bundle: ${bundleWX} | Ancestors: ${buyer.ancestors?.length || 0}`,
+      );
+
       let totalDistributed = 0;
 
-      for (let i = 0; i < buyer.ancestors.length; i++) {
+      // Ancestors loop - 5 levels tak
+      for (let i = 0; i < (buyer.ancestors?.length || 0); i++) {
         const level = i + 1;
         if (level > 5) break;
+
         const commissionWX = commissions[`L${level}`];
         if (!commissionWX) continue;
 
-        totalDistributed += commissionWX;
-        const eWalletPart = commissionWX * 0.8; // 80% withdrawable
-        const sWalletPart = commissionWX * 0.2; // 20% locked
+        // Ancestor ID safely extract karna (chahe string ho ya populated object)
+        const ancestorItem = buyer.ancestors[i];
+        const uplineId = ancestorItem?._id ? ancestorItem._id : ancestorItem;
 
+        if (!uplineId) continue;
+
+        // 🟢 UPLINE CHECK: Schema ke mutabiq check karo ke upline ne plan select kiya hai ya nahi (currentBundle > 0)
+        const uplineUserCheck = await User.findById(uplineId);
+        if (
+          !uplineUserCheck ||
+          uplineUserCheck.currentBundle <= 0 ||
+          uplineUserCheck.status !== "active"
+        ) {
+          console.log(
+            `[SKIP] L${level} Upline ID ${uplineId} has not selected a plan (currentBundle: ${uplineUserCheck?.currentBundle}) or is not active. Commission skipped.`,
+          );
+          continue;
+        }
+
+        totalDistributed += commissionWX;
+        const eWalletPart = commissionWX * 0.8;
+        const sWalletPart = commissionWX * 0.2;
         const vpCredit = level === 1 ? bundleVP : bundleVP * 0.5;
 
-        // FIX 2: Direct team sirf pehli baar count ho
-        const isFirstActivation = !buyer.isActive;
+        // Buyer ki pehli activation check (agar buyer ka currentBundle pehle 0 tha)
+        const isFirstActivation = (buyer.currentBundle || 0) === 0;
 
         const incObj = {
           "wallet.eWallet": eWalletPart,
@@ -92,35 +115,71 @@ export async function PUT(req, { params }) {
           incObj["stats.totalTeam"] = 1;
         }
 
+        // 1. Wallet Update
         const updatedUpline = await User.findByIdAndUpdate(
-          buyer.ancestors[i],
+          uplineId,
           { $inc: incObj },
           { new: true },
         );
 
-        if (updatedUpline) {
-          const newRank = getRankByVP(updatedUpline.volumePoints);
-          if (newRank !== updatedUpline.rank) {
-            await User.findByIdAndUpdate(buyer.ancestors[i], { rank: newRank });
-          }
+        if (!updatedUpline) {
+          console.warn(
+            `[L${level}] Upline not found during update: ${uplineId}`,
+          );
+          continue;
+        }
+
+        // 2. Rank Update
+        const newRank = getRankByVP(updatedUpline.volumePoints);
+        if (newRank !== updatedUpline.rank) {
+          await User.findByIdAndUpdate(updatedUpline._id, { rank: newRank });
+        }
+
+        // 3. TRANSACTION CREATE
+        try {
+          const tx = await Transaction.create({
+            userId: updatedUpline._id,
+            type: level === 1 ? "Direct" : "Team",
+            amount: commissionWX,
+            wxAmount: commissionWX,
+            fromUser: buyer._id,
+            fromUserName: buyer.name || buyer.userName || "User",
+            fromUserIdCode:
+              buyer.referralCode ||
+              buyer._id.toString().slice(-6).toUpperCase(),
+            relatedDeposit: deposit._id,
+            level: level,
+            description: `L${level} commission from ${buyer.name || buyer.userName || "User"} - Bundle WX$${bundleWX}`,
+            status: "completed",
+            splitInfo: {
+              eWallet: eWalletPart,
+              sWallet: sWalletPart,
+            },
+          });
+          console.log(
+            `[TX SUCCESS] L${level} -> ${updatedUpline.name || updatedUpline.userName} WX$${commissionWX} | ID: ${tx._id}`,
+          );
+        } catch (txErr) {
+          console.error(
+            `[TX FAILED] L${level} for user ${updatedUpline._id}:`,
+            txErr.message,
+          );
         }
       }
 
-      const companyRetention = bundleWX - totalDistributed;
       console.log(
-        `Company Retention for deposit ${deposit._id}: WX$${companyRetention}`,
+        `[RETENTION] Company keeps: WX$${bundleWX - totalDistributed}`,
       );
 
-      // BUYER: PAISA NAHI DENA, SIRF BUNDLE + VP
+      // 4. Buyer Activation & Bundle Update
       const newVP = (buyer.volumePoints || 0) + bundleVP;
       const newRank = getRankByVP(newVP);
-
       await User.findByIdAndUpdate(buyer._id, {
         $inc: { volumePoints: bundleVP },
         $set: {
           currentBundle: Math.max(buyer.currentBundle || 0, bundleWX),
           rank: newRank,
-          isActive: true,
+          status: "active",
         },
       });
     }
@@ -131,7 +190,7 @@ export async function PUT(req, { params }) {
 
     return Response.json({
       success: true,
-      message: `Deposit ${action} - Blueprint compliant (80/20 split)`,
+      message: `Deposit ${action}. Commissions distributed & logged.`,
       deposit,
     });
   } catch (error) {
