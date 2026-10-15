@@ -103,10 +103,10 @@ function RegisterFormContent() {
             <br />
             With Wealnex
           </h2>
-          <p className="text-white/60 text-sm max-w-[400px]">
+          {/* <p className="text-white/60 text-sm max-w-[400px]">
             5 Level commissions - 1 WX$ = {WX_RATE} PKR. Bundle price in WX$.
-          </p>
-          <div className="grid grid-cols-3 gap-3 pt-4">
+          </p> */}
+          {/* <div className="grid grid-cols-3 gap-3 pt-4">
             {BUNDLES.slice(0, 3).map((b) => (
               <div
                 key={b.priceWX}
@@ -118,7 +118,7 @@ function RegisterFormContent() {
                 </p>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
         <p className="text-[11px] text-white/40">
           © 2026 Wealnex Corp. WX$ Engine Active
