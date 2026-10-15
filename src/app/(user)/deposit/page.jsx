@@ -156,21 +156,15 @@ export default function DepositGatewayPage() {
   const methods = [
     {
       id: "jazzcash",
-      name: "JazzCash",
-      desc: "Pay via JazzCash • Instant",
-      acc: "0300-1234567",
+      name: "MUHAMMAD TALHA",
+      desc: "Pay via JazzCash",
+      acc: "03439204893",
     },
     {
       id: "easypaisa",
-      name: "EasyPaisa",
+      name: "MUHAMMAD TALHA",
       desc: "Pay via EasyPaisa • Instant",
-      acc: "0345-1234567",
-    },
-    {
-      id: "usdt",
-      name: "USDT (TRC20)",
-      desc: "Crypto via USDT • Min 10 USDT",
-      acc: "TXyz...Abc123",
+      acc: "03439204893",
     },
   ];
 

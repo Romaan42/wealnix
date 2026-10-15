@@ -1,4 +1,3 @@
-// app/admin/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -28,6 +27,15 @@ export default function AdminDashboard() {
     );
   if (!data || data.error)
     return <div className="p-10 text-red-500">Error: {data?.error}</div>;
+
+  // Company Calculations
+  const totalDepositedWX = Number(data.deposits.totalApprovedWX || 0);
+  const totalPaidNetWX = Number(data.withdraws.totalNetWX || 0);
+  const taxRevenueWX = Number(data.withdraws.totalTaxWX || 0);
+
+  // Net Company Reserve (Cashflow: Deposit In - Withdraw Out)
+  const companyNetBalanceWX = totalDepositedWX - totalPaidNetWX;
+  const companyNetBalancePKR = companyNetBalanceWX * 100;
 
   return (
     <div className="space-y-6">
@@ -69,7 +77,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Row 2: Users */}
+      {/* Row 2: Users & Activity */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         <div className="bg-white p-5 rounded-2xl border">
           <p className="text-xs text-gray-500">Total Users</p>
@@ -84,7 +92,7 @@ export default function AdminDashboard() {
         </div>
         <Link
           href="/admin/deposits"
-          className="bg-white p-5 rounded-2xl border hover:shadow-md"
+          className="bg-white p-5 rounded-2xl border hover:shadow-md transition"
         >
           <p className="text-xs text-gray-500">Deposits</p>
           <h2 className="text-2xl font-bold mt-1 text-orange-600">
@@ -101,7 +109,7 @@ export default function AdminDashboard() {
         </Link>
         <Link
           href="/admin/withdrawals"
-          className="bg-white p-5 rounded-2xl border hover:shadow-md"
+          className="bg-white p-5 rounded-2xl border hover:shadow-md transition"
         >
           <p className="text-xs text-gray-500">Withdrawals</p>
           <h2 className="text-2xl font-bold mt-1 text-red-600">
@@ -117,7 +125,7 @@ export default function AdminDashboard() {
         </Link>
         <Link
           href="/admin/support"
-          className="bg-white p-5 rounded-2xl border hover:shadow-md"
+          className="bg-white p-5 rounded-2xl border hover:shadow-md transition"
         >
           <p className="text-xs text-gray-500">Support Tickets</p>
           <h2 className="text-2xl font-bold mt-1">{data.support.open} Open</h2>
@@ -130,7 +138,7 @@ export default function AdminDashboard() {
         <h3 className="font-bold text-sm mb-4">
           Financial Summary (Only from Deposit & Withdraw Models)
         </h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="p-4 bg-gray-50 rounded-xl">
             <p className="text-gray-500">Total Deposited (Approved)</p>
             <p className="font-bold text-lg">
@@ -150,6 +158,75 @@ export default function AdminDashboard() {
             <p className="text-[11px] text-gray-400">
               Formula: Tax = amountWX * 0.10, Net = amount - tax, PKR = Net *
               100
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4: Company Profit & Net Cashflow */}
+      <div className="bg-gradient-to-r from-emerald-900 to-slate-900 text-white rounded-2xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4 border-b border-emerald-800/60 pb-3">
+          <div>
+            <h3 className="font-bold text-lg">
+              Company Profit & Cashflow Overview
+            </h3>
+            <p className="text-xs text-emerald-200">
+              Real-time calculation based on deposits, withdrawals, and fee
+              deductions.
+            </p>
+          </div>
+          <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full border border-emerald-500/30">
+            System Revenue
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-slate-100 mt-4">
+          {/* Direct Revenue from Fee/Tax */}
+          <div className="bg-white/10 p-4 rounded-xl border border-white/10 backdrop-blur-sm">
+            <p className="text-xs text-slate-300 uppercase tracking-wide">
+              Withdrawal Tax Revenue (10%)
+            </p>
+            <h4 className="text-2xl font-black mt-2 text-emerald-400">
+              WX$ {taxRevenueWX.toFixed(2)}
+            </h4>
+            <p className="text-xs text-slate-300 mt-1">
+              PKR {(taxRevenueWX * 100).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-2">
+              Direct company income earned from processed withdrawals.
+            </p>
+          </div>
+
+          {/* System Reserve / Net Liquidity */}
+          <div className="bg-white/10 p-4 rounded-xl border border-white/10 backdrop-blur-sm">
+            <p className="text-xs text-slate-300 uppercase tracking-wide">
+              Net System Reserve (Cashflow)
+            </p>
+            <h4 className="text-2xl font-black mt-2 text-white">
+              WX$ {companyNetBalanceWX.toFixed(2)}
+            </h4>
+            <p className="text-xs text-slate-300 mt-1">
+              PKR {companyNetBalancePKR.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-2">
+              Formula: Total Approved Deposits − Total Paid Out Withdrawals
+            </p>
+          </div>
+
+          {/* Locked S-Wallet Funds */}
+          <div className="bg-white/10 p-4 rounded-xl border border-white/10 backdrop-blur-sm">
+            <p className="text-xs text-slate-300 uppercase tracking-wide">
+              Locked User Funds (S-Wallet)
+            </p>
+            <h4 className="text-2xl font-black mt-2 text-amber-400">
+              WX$ {Number(data.wallets.totalSWallet || 0).toFixed(2)}
+            </h4>
+            <p className="text-xs text-slate-300 mt-1">
+              PKR{" "}
+              {(Number(data.wallets.totalSWallet || 0) * 100).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-2">
+              20% system re-investment hold before payout threshold.
             </p>
           </div>
         </div>
