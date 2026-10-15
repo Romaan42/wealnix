@@ -76,33 +76,11 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                <ShieldCheck size={20} />
-              </div>
-              <div>
-                <p className="font-bold text-sm">Secure Login</p>
-                <p className="text-[11px] text-white/60">256-bit Encrypted</p>
-              </div>
-            </div>
-            <p className="text-xs text-white/70 leading-relaxed">
-              "My earnings crossed WX$ 154 (PKR 15,400) in just 3 months. Best
-              corporate MLM I've joined."
-            </p>
-            <p className="text-[11px] text-[#C5A059] mt-3 font-bold">
-              — Alex Morgan, Gold Tier
-            </p>
-          </div>
-
           <div>
             <h2 className="text-[36px] font-bold leading-tight">
               Welcome <br /> <span className="text-[#C5A059]">Back</span>
             </h2>
-            <p className="text-white/60 text-sm mt-3 max-w-[380px]">
-              Access your E-Wallet (WX$), S-Wallet and track your 5 levels
-              commission in real-time. 1 WX$ = 100 PKR
-            </p>
+
             <div className="flex gap-6 mt-6 text-xs">
               <span className="flex items-center gap-2">
                 <TrendingUp size={16} className="text-[#C5A059]" /> WX$ 192 Avg
@@ -172,12 +150,12 @@ export default function LoginPage() {
                 <label className="text-[12px] font-semibold text-gray-600">
                   Password
                 </label>
-                <Link
+                {/* <Link
                   href="/forgot-password"
                   className="text-[11px] text-[#C5A059] font-semibold"
                 >
                   Forgot Password?
-                </Link>
+                </Link> */}
               </div>
               <div className="relative">
                 <Lock
@@ -232,16 +210,6 @@ export default function LoginPage() {
                 </>
               )}
             </button>
-
-            <div className="bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-xl p-3 flex items-center gap-2">
-              <div className="w-7 h-7 bg-[#C5A059] rounded-full flex items-center justify-center text-white text-[10px] font-bold">
-                !
-              </div>
-              <p className="text-[11px] text-[#8B6B2E]">
-                <span className="font-bold">KYC Required:</span> E-Wallet
-                withdraw WX$ 10 min (PKR 1000). S-Wallet locked till WX$ 500.
-              </p>
-            </div>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-8">
