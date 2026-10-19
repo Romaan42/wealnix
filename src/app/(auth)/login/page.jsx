@@ -8,7 +8,6 @@ import {
   Mail,
   Lock,
   ArrowRight,
-  ShieldCheck,
   TrendingUp,
   Users,
   Loader2,

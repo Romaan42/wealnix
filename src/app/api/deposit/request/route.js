@@ -17,7 +17,7 @@ export async function POST(req) {
     const auth = await checkUserLogin();
     if (!auth) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { bundlePriceWX, method, trxId } = await req.json();
+    const { bundlePriceWX, method, trxId, image } = await req.json();
 
     // FIX: Sirf bundlePriceWX se validate karo, amountPKR/WX frontend se mat lo
     const bundle = BUNDLES[Number(bundlePriceWX)];
@@ -49,6 +49,7 @@ export async function POST(req) {
       bundleVP: bundle.vp,
       method: method || "jazzcash",
       trxId: trxId.trim(),
+      screenshot: image,
       status: "pending",
     });
 

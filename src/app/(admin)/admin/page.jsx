@@ -164,7 +164,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Row 4: Company Profit & Net Cashflow */}
-      <div className="bg-gradient-to-r from-emerald-900 to-slate-900 text-white rounded-2xl p-6 shadow-lg">
+      <div className="bg-linear-to-r from-emerald-900 to-slate-900 text-white rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4 border-b border-emerald-800/60 pb-3">
           <div>
             <h3 className="font-bold text-lg">

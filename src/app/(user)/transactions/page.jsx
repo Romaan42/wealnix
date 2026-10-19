@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, Users, Crown, TrendingUp, Wallet } from "lucide-react";
 import Loading from "../loading";
 
-const TABS = ["All", "Direct", "Team Commission", "Binary", "ROI", "Withdraw"];
+const TABS = ["All", "Direct", "Team Commission"];
 
 export default function TransactionRecords() {
   const [filter, setFilter] = useState("All");
@@ -49,9 +49,6 @@ export default function TransactionRecords() {
           <h2 className="text-[22px] font-bold text-[#0f172a]">
             Transaction Records
           </h2>
-          <p className="text-[12px] text-gray-400">
-            Real DB se - kahan se aur kitna mila
-          </p>
         </div>
         <div className="bg-white border rounded-2xl px-5 py-3 flex items-center gap-6 shadow-sm">
           <div>
@@ -157,7 +154,7 @@ export default function TransactionRecords() {
               ) : (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-gray-400">
-                    No records for {filter} - pehle koi deposit approve karo
+                    No records for {filter} -
                   </td>
                 </tr>
               )}

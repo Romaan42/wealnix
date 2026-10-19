@@ -9,9 +9,12 @@ import {
   Award,
   Gem,
   Diamond,
+  Upload,
+  Trash,
 } from "lucide-react";
 import PagesLoader from "@/components/PagesLoader";
 import toast from "react-hot-toast";
+import { CldImage, CldUploadWidget } from "next-cloudinary";
 
 const WX_RATE = 100;
 
@@ -80,6 +83,9 @@ export default function DepositGatewayPage() {
     history: [],
     stats: { total: 0, pending: 0, success: 0 },
   });
+  const [image, setImage] = useState(
+    "https://res.cloudinary.com/druroxxha/image/upload/v1788766392/Screenshot_2026-09-07_072614_ogjzxz.png",
+  );
   const [selectedBundle, setSelectedBundle] = useState(BUNDLES[2]); // Default Gold
   const [amountPKR, setAmountPKR] = useState(10000);
   const [method, setMethod] = useState("jazzcash");
@@ -128,6 +134,7 @@ export default function DepositGatewayPage() {
           bundlePriceWX: selectedBundle.priceWX, // bas yahi bhejo, baaki backend khud nikal lega
           method,
           trxId,
+          image,
         }),
       });
       const json = await res.json();
@@ -281,7 +288,6 @@ export default function DepositGatewayPage() {
                 )}
               </button>
             ))}
-
             <div>
               <p className="font-bold text-sm mb-2">Transaction ID (TrxID)</p>
               <input
@@ -290,6 +296,70 @@ export default function DepositGatewayPage() {
                 placeholder="JC1234567890 ya Txn Hash"
                 className="w-full bg-gray-100 border rounded-xl px-4 py-3 outline-none focus:border-[#1E3A8A] text-sm"
               />
+            </div>
+            <div className="space-y-2">
+              <p className="font-semibold text-sm text-gray-800">
+                Transaction Proof <span className="text-red-500">*</span>
+              </p>
+
+              {image ? (
+                <div className="group relative border border-gray-200 bg-gray-50 p-2 rounded-2xl overflow-hidden h-[320px]">
+                  {/* Remove Button */}
+                  <button
+                    onClick={() => setImage(null)}
+                    className="absolute top-3 left-3 z-20 bg-white p-2 rounded-full shadow-md hover:bg-red-50 transition-all"
+                  >
+                    <Trash className="w-4 h-4 text-red-500" />
+                  </button>
+
+                  {/* Image Preview */}
+                  <div className="relative w-full h-full">
+                    <CldImage
+                      src={image}
+                      alt="transaction proof"
+                      fill
+                      className="object-contain rounded-xl"
+                    />
+                  </div>
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all pointer-events-none rounded-2xl" />
+                  <p className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
+                    Click trash to remove
+                  </p>
+                </div>
+              ) : (
+                <CldUploadWidget
+                  uploadPreset="talha-sabeeh"
+                  onSuccess={(result) => {
+                    if (result?.event === "success") {
+                      setImage(result.info.secure_url);
+                    } else {
+                      toast.error("Error uploading image");
+                    }
+                  }}
+                >
+                  {({ open }) => (
+                    <div
+                      onClick={() => open()}
+                      className="group border-2 border-dashed border-gray-300 hover:border-black bg-gray-50/50 hover:bg-white p-8 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 h-[320px]"
+                    >
+                      <div className="w-14 h-14 bg-white rounded-full shadow-sm border flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Upload className="w-6 h-6 text-gray-700" />
+                      </div>
+                      <p className="font-bold text-gray-900">
+                        Click to upload screenshot
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        PNG, JPG up to 5MB - TrxID visible hona chahiye
+                      </p>
+                      <div className="mt-4 text-xs font-medium bg-black text-white px-4 py-1.5 rounded-full">
+                        Browse File
+                      </div>
+                    </div>
+                  )}
+                </CldUploadWidget>
+              )}
             </div>
 
             <div className="bg-[#C5A059]/15 border border-[#C5A059]/30 rounded-xl p-4 flex justify-between items-center">
@@ -310,7 +380,6 @@ export default function DepositGatewayPage() {
                 </p>
               </div>
             </div>
-
             <button
               onClick={handleSubmit}
               disabled={submitting}
