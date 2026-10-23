@@ -290,9 +290,9 @@ export default function Dashboard({ setSidebarOpen }) {
                       </p>
                     </div>
                     <span
-                      className={`font-bold px-2 py-1 rounded-md text-[11px] ${tx.amount > 0 ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
+                      className={`font-bold px-2 py-1 rounded-md text-[11px] ${tx.status === "approved" ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
                     >
-                      {tx.amount > 0 ? "+" : ""}WX${tx.amount}
+                      {tx.status === "approved" ? "+" : " "}WX${tx.amount}
                     </span>
                   </div>
                 ))

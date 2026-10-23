@@ -80,7 +80,7 @@ export default async function AdminLayout({ children }) {
     },
     {
       name: "LMS / Assets",
-      href: "/admin/courses",
+      href: "/admin/lms",
       icon: BookOpen,
       count: null,
     },

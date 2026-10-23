@@ -8,6 +8,24 @@ const userSchema = mongoose.Schema(
     number: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 
+    // === PROFILE & KYC FIELDS (NEW) ===
+    phone: { type: String, default: "" }, // alias for number
+    profilePic: { type: String, default: "" }, // Cloudinary URL
+    cnic: { type: String, default: "", trim: true }, // 42101-1234567-1
+    dob: { type: String, default: "" }, // YYYY-MM-DD
+    city: { type: String, default: "" },
+    address: { type: String, default: "" },
+    cnicFront: { type: String, default: "" }, // Cloudinary URL
+    cnicBack: { type: String, default: "" }, // Cloudinary URL
+
+    // KYC & Referral
+    kycStatus: {
+      type: String,
+      enum: ["pending", "submitted", "verified", "rejected"],
+      default: "pending",
+    },
+    kycReason: { type: String, default: "" }, // rejection reason
+
     sponsor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -21,7 +39,7 @@ const userSchema = mongoose.Schema(
 
     // Wallet sab WX$ me store hoga
     wallet: {
-      eWallet: { type: Number, default: 0 }, // DECIMAL(12,2) - 80%
+      eWallet: { type: Number, default: 0 }, // 80%
       sWallet: { type: Number, default: 0 }, // 20%
       totalWithdrawn: { type: Number, default: 0 },
     },

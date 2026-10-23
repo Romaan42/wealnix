@@ -1,4 +1,3 @@
-// app/admin/deposits/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";

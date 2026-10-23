@@ -83,9 +83,7 @@ export default function DepositGatewayPage() {
     history: [],
     stats: { total: 0, pending: 0, success: 0 },
   });
-  const [image, setImage] = useState(
-    "https://res.cloudinary.com/druroxxha/image/upload/v1788766392/Screenshot_2026-09-07_072614_ogjzxz.png",
-  );
+  const [image, setImage] = useState(null);
   const [selectedBundle, setSelectedBundle] = useState(BUNDLES[2]); // Default Gold
   const [amountPKR, setAmountPKR] = useState(10000);
   const [method, setMethod] = useState("jazzcash");

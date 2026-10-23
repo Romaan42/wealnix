@@ -41,12 +41,11 @@ export async function PUT(req, { params }) {
     }
 
     const deposit = await Deposit.findById(id);
-    if (!deposit) {
+    if (!deposit)
       return Response.json(
         { success: false, error: "Deposit not found" },
         { status: 404 },
       );
-    }
     if (deposit.status !== "pending") {
       return Response.json(
         { success: false, error: `Already ${deposit.status}` },
@@ -54,143 +53,109 @@ export async function PUT(req, { params }) {
       );
     }
 
-    if (action === "approved") {
-      const buyer = await User.findById(deposit.user);
-      if (!buyer) throw new Error(`Buyer not found for ID ${deposit.user}`);
-
-      const bundleWX = deposit.amountWX;
-      const bundleVP = bundleWX / 10;
-      const commissions = COMMISSION_TABLE[bundleWX];
-      if (!commissions) throw new Error(`Invalid bundle WX$ ${bundleWX}`);
-
-      console.log(
-        `[APPROVE] Buyer: ${buyer.name || buyer.userName} | Bundle: ${bundleWX} | Ancestors: ${buyer.ancestors?.length || 0}`,
-      );
-
-      let totalDistributed = 0;
-
-      // Ancestors loop - 5 levels tak
-      for (let i = 0; i < (buyer.ancestors?.length || 0); i++) {
-        const level = i + 1;
-        if (level > 5) break;
-
-        const commissionWX = commissions[`L${level}`];
-        if (!commissionWX) continue;
-
-        // Ancestor ID safely extract karna (chahe string ho ya populated object)
-        const ancestorItem = buyer.ancestors[i];
-        const uplineId = ancestorItem?._id ? ancestorItem._id : ancestorItem;
-
-        if (!uplineId) continue;
-
-        // 🟢 UPLINE CHECK: Schema ke mutabiq check karo ke upline ne plan select kiya hai ya nahi (currentBundle > 0)
-        const uplineUserCheck = await User.findById(uplineId);
-        if (
-          !uplineUserCheck ||
-          uplineUserCheck.currentBundle <= 0 ||
-          uplineUserCheck.status !== "active"
-        ) {
-          console.log(
-            `[SKIP] L${level} Upline ID ${uplineId} has not selected a plan (currentBundle: ${uplineUserCheck?.currentBundle}) or is not active. Commission skipped.`,
-          );
-          continue;
-        }
-
-        totalDistributed += commissionWX;
-        const eWalletPart = commissionWX * 0.8;
-        const sWalletPart = commissionWX * 0.2;
-        const vpCredit = level === 1 ? bundleVP : bundleVP * 0.5;
-
-        // Buyer ki pehli activation check (agar buyer ka currentBundle pehle 0 tha)
-        const isFirstActivation = (buyer.currentBundle || 0) === 0;
-
-        const incObj = {
-          "wallet.eWallet": eWalletPart,
-          "wallet.sWallet": sWalletPart,
-          volumePoints: vpCredit,
-          "stats.totalTeamSalesWX": bundleWX,
-        };
-        if (isFirstActivation) {
-          if (level === 1) incObj["stats.directTeam"] = 1;
-          incObj["stats.totalTeam"] = 1;
-        }
-
-        // 1. Wallet Update
-        const updatedUpline = await User.findByIdAndUpdate(
-          uplineId,
-          { $inc: incObj },
-          { new: true },
-        );
-
-        if (!updatedUpline) {
-          console.warn(
-            `[L${level}] Upline not found during update: ${uplineId}`,
-          );
-          continue;
-        }
-
-        // 2. Rank Update
-        const newRank = getRankByVP(updatedUpline.volumePoints);
-        if (newRank !== updatedUpline.rank) {
-          await User.findByIdAndUpdate(updatedUpline._id, { rank: newRank });
-        }
-
-        // 3. TRANSACTION CREATE
-        try {
-          const tx = await Transaction.create({
-            userId: updatedUpline._id,
-            type: level === 1 ? "Direct" : "Team",
-            amount: commissionWX,
-            wxAmount: commissionWX,
-            fromUser: buyer._id,
-            fromUserName: buyer.name || buyer.userName || "User",
-            fromUserIdCode:
-              buyer.referralCode ||
-              buyer._id.toString().slice(-6).toUpperCase(),
-            relatedDeposit: deposit._id,
-            level: level,
-            description: `L${level} commission from ${buyer.name || buyer.userName || "User"} - Bundle WX$${bundleWX}`,
-            status: "completed",
-            splitInfo: {
-              eWallet: eWalletPart,
-              sWallet: sWalletPart,
-            },
-          });
-          console.log(
-            `[TX SUCCESS] L${level} -> ${updatedUpline.name || updatedUpline.userName} WX$${commissionWX} | ID: ${tx._id}`,
-          );
-        } catch (txErr) {
-          console.error(
-            `[TX FAILED] L${level} for user ${updatedUpline._id}:`,
-            txErr.message,
-          );
-        }
-      }
-
-      console.log(
-        `[RETENTION] Company keeps: WX$${bundleWX - totalDistributed}`,
-      );
-
-      // 4. Buyer Activation & Bundle Update
-      const newVP = (buyer.volumePoints || 0) + bundleVP;
-      const newRank = getRankByVP(newVP);
-      await User.findByIdAndUpdate(buyer._id, {
-        $inc: { volumePoints: bundleVP },
-        $set: {
-          currentBundle: Math.max(buyer.currentBundle || 0, bundleWX),
-          rank: newRank,
-          status: "active",
-        },
+    // CASE 1: REJECT - Sirf status update, no commission
+    if (action === "rejected") {
+      deposit.status = "rejected";
+      deposit.adminNote = adminNote || "Rejected by admin";
+      await deposit.save();
+      return Response.json({
+        success: true,
+        message: "Deposit rejected and saved in history",
+        deposit,
       });
     }
 
-    deposit.status = action;
+    const buyer = await User.findById(deposit.user);
+    if (!buyer) throw new Error(`Buyer not found: ${deposit.user}`);
+
+    const bundleWX = deposit.amountWX;
+    const bundleVP = bundleWX / 10;
+    const commissions = COMMISSION_TABLE[bundleWX];
+    if (!commissions) throw new Error(`Invalid bundle WX$ ${bundleWX}`);
+
+    let totalDistributed = 0;
+    const isFirstActivation = (buyer.currentBundle || 0) === 0;
+
+    for (let i = 0; i < (buyer.ancestors?.length || 0); i++) {
+      const level = i + 1;
+      if (level > 5) break;
+
+      const commissionWX = commissions[`L${level}`];
+      if (!commissionWX) continue;
+
+      const ancestorItem = buyer.ancestors[i];
+      const uplineId = ancestorItem?._id || ancestorItem;
+      if (!uplineId) continue;
+
+      // Upline active hai ya nahi check
+      const uplineCheck = await User.findById(uplineId);
+      if (!uplineCheck || (uplineCheck.currentBundle || 0) <= 0) {
+        console.log(`[SKIP] L${level} ${uplineId} - no plan`);
+        continue;
+      }
+
+      totalDistributed += commissionWX;
+      const eWalletPart = commissionWX * 0.8;
+      const sWalletPart = commissionWX * 0.2;
+      const vpCredit = level === 1 ? bundleVP : bundleVP * 0.5;
+
+      const incObj = {
+        "wallet.eWallet": eWalletPart,
+        "wallet.sWallet": sWalletPart,
+        volumePoints: vpCredit,
+        "stats.totalTeamSalesWX": bundleWX,
+      };
+      if (isFirstActivation) {
+        if (level === 1) incObj["stats.directTeam"] = 1;
+        incObj["stats.totalTeam"] = 1;
+      }
+
+      const updatedUpline = await User.findByIdAndUpdate(
+        uplineId,
+        { $inc: incObj },
+        { new: true },
+      );
+      if (!updatedUpline) continue;
+
+      const newRank = getRankByVP(updatedUpline.volumePoints);
+      if (newRank !== updatedUpline.rank) {
+        await User.findByIdAndUpdate(updatedUpline._id, { rank: newRank });
+      }
+
+      await Transaction.create({
+        userId: updatedUpline._id,
+        type: level === 1 ? "Direct" : "Team",
+        amount: commissionWX,
+        wxAmount: commissionWX,
+        fromUser: buyer._id,
+        fromUserName: buyer.name || buyer.userName,
+        relatedDeposit: deposit._id,
+        level,
+        description: `L${level} commission from ${buyer.name || buyer.userName} - WX$${bundleWX}`,
+        status: "completed",
+        splitInfo: { eWallet: eWalletPart, sWallet: sWalletPart },
+      });
+    }
+
+    // Buyer ko active karo
+    const newVP = (buyer.volumePoints || 0) + bundleVP;
+    await User.findByIdAndUpdate(buyer._id, {
+      $inc: { volumePoints: bundleVP },
+      $set: {
+        currentBundle: Math.max(buyer.currentBundle || 0, bundleWX),
+        rank: getRankByVP(newVP),
+        isActive: true,
+        status: "active",
+      },
+    });
+
+    deposit.status = "approved";
     deposit.adminNote = adminNote || "";
     await deposit.save();
 
     return Response.json({
       success: true,
-      message: `Deposit ${action}. Commissions distributed & logged.`,
+      message: `Approved. Company keeps WX$${bundleWX - totalDistributed}`,
       deposit,
     });
   } catch (error) {
