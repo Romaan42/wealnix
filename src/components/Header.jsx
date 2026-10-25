@@ -58,7 +58,7 @@ export default function Header() {
   };
 
   return (
-    <div className="min-h-screen sticky top-0">
+    <div className="min-h-screen sticky top-0 z-50">
       <Toaster />
       <button
         onClick={() => setSidebarOpen(true)}
