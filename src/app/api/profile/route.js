@@ -9,11 +9,7 @@ export async function GET() {
   if (!auth) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const userId = auth._id || auth.id || auth.userId;
-  const user = await User.findById(userId)
-    .select(
-      "name email phone referralCode parentRank wallet volumePoints rank createdAt kycStatus",
-    )
-    .lean();
+  const user = await User.findById(userId);
 
   if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 

@@ -32,6 +32,8 @@ export default function ProfilePage() {
     cnicBack: "",
   });
 
+  console.log(user);
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -41,6 +43,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/profile", { cache: "no-store" });
       const json = await res.json();
+      console.log(json);
       if (json.success) {
         setUser(json.user);
         setForm({

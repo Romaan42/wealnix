@@ -21,7 +21,7 @@ const WX_RATE = 100;
 const BUNDLES = [
   {
     id: 20,
-    name: "Starter",
+    name: "Digital Foundation Program (DFP)",
     priceWX: 20,
     pricePKR: 2000,
     vp: 2,
@@ -32,7 +32,7 @@ const BUNDLES = [
   },
   {
     id: 50,
-    name: "Silver",
+    name: "Professional Certification Program (PCP)",
     priceWX: 50,
     pricePKR: 5000,
     vp: 5,
@@ -43,7 +43,7 @@ const BUNDLES = [
   },
   {
     id: 100,
-    name: "Gold",
+    name: "Advanced Digital Program (ADP)",
     priceWX: 100,
     pricePKR: 10000,
     vp: 10,
@@ -55,7 +55,7 @@ const BUNDLES = [
   },
   {
     id: 150,
-    name: "Platinum",
+    name: "Digital Management Program (DMP)",
     priceWX: 150,
     pricePKR: 15000,
     vp: 15,
@@ -66,7 +66,7 @@ const BUNDLES = [
   },
   {
     id: 200,
-    name: "Diamond",
+    name: "Digital Corporate Program (DCP)",
     priceWX: 200,
     pricePKR: 20000,
     vp: 20,
@@ -160,16 +160,16 @@ export default function DepositGatewayPage() {
 
   const methods = [
     {
-      id: "jazzcash",
-      name: "MUHAMMAD TALHA",
-      desc: "Pay via JazzCash",
+      id: "Nayapay",
+      name: "Muhammad talha",
+      desc: "Pay via Nayapay",
       acc: "03439204893",
     },
     {
-      id: "easypaisa",
-      name: "MUHAMMAD TALHA",
+      id: "Easypaisa",
+      name: "Muhammad talha",
       desc: "Pay via EasyPaisa • Instant",
-      acc: "03439204893",
+      acc: "03149058865",
     },
   ];
 
