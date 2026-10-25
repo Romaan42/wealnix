@@ -15,11 +15,13 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { CldUploadWidget, CldImage } from "next-cloudinary";
+import toast from "react-hot-toast";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [refLink, setRefLink] = useState("");
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -32,8 +34,6 @@ export default function ProfilePage() {
     cnicBack: "",
   });
 
-  console.log(user);
-
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -43,7 +43,7 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/profile", { cache: "no-store" });
       const json = await res.json();
-      console.log(json);
+
       if (json.success) {
         setUser(json.user);
         setForm({
@@ -57,6 +57,7 @@ export default function ProfilePage() {
           cnicFront: json.user.cnicFront || "",
           cnicBack: json.user.cnicBack || "",
         });
+        setRefLink(json.referralLink);
       }
     } catch (e) {
       console.error(e);
@@ -85,11 +86,6 @@ export default function ProfilePage() {
         <div className="w-8 h-8 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
-
-  const referralLink =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/register?ref=${user?.referralCode}`
-      : "";
 
   const UploadCard = ({ label, value, field, folder }) => (
     <CldUploadWidget
@@ -378,10 +374,14 @@ export default function ProfilePage() {
               <LinkIcon size={16} /> Your Referral Link
             </h3>
             <div className="mt-3 bg-[#f5f7fb] border rounded-xl p-3 text-[12px] font-mono break-all">
-              {referralLink}
+              {refLink}
             </div>
             <button
-              onClick={() => navigator.clipboard.writeText(referralLink)}
+              onClick={() =>
+                navigator.clipboard
+                  .writeText(refLink)
+                  .then(() => toast.success("link copied"))
+              }
               className="w-full mt-3 bg-[#C5A059] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#A88645]"
             >
               Copy Link

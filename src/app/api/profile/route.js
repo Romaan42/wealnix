@@ -13,7 +13,9 @@ export async function GET() {
 
   if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 
-  return Response.json({ success: true, user });
+  const referralLink = `${process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || "https://wealnex.com"}/register?ref=${user.userName}`;
+
+  return Response.json({ success: true, user, referralLink });
 }
 
 export async function PUT(req) {

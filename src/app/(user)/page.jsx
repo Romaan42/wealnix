@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Loading from "./loading";
+import { CldImage } from "next-cloudinary";
 
 // Blueprint Bundle Matrix
 const BUNDLE_INFO = {
@@ -70,14 +71,17 @@ export default function Dashboard({ setSidebarOpen }) {
   const [data, setData] = useState(null);
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
         const d1 = await fetch("/api/user/dashboard").then((r) => r.json());
         const d2 = await fetch("/api/referrals/top").then((r) => r.json());
+
         if (d1.success) setData(d1);
         if (d2.success) setPartners(d2.partners);
+        if (d1.success) setProfileImage(d1.user.image || null);
       } finally {
         setLoading(false);
       }
@@ -116,8 +120,17 @@ export default function Dashboard({ setSidebarOpen }) {
             </p>
           </div>
         </div>
-        <div className="w-9 h-9 bg-[#0f172a] text-white rounded-full flex items-center justify-center font-bold">
-          {user?.name?.[0]?.toUpperCase() || "U"}
+
+        <div className="w-9 h-9 bg-[#0f172a] text-white rounded-full flex items-center justify-center font-bold relative">
+          {profileImage ? (
+            <CldImage
+              src={profileImage}
+              fill
+              className="w-9 h-9 rounded-full "
+            />
+          ) : (
+            <span>{user?.name?.[0]?.toUpperCase() || "U"}</span>
+          )}
         </div>
       </div>
 

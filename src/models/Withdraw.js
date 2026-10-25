@@ -9,7 +9,7 @@ const WithdrawSchema = new mongoose.Schema(
     amountPKR: { type: Number, required: true },
     method: {
       type: String,
-      enum: ["jazzcash", "easypaisa", "bank", "usdt"],
+      enum: ["jazzcash", "easypaisa", "bank"],
       default: "jazzcash",
     },
     accountTitle: { type: String, required: true },

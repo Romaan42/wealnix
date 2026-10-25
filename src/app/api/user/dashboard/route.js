@@ -118,6 +118,7 @@ export async function GET() {
         name: user?.name || user?.userName,
         email: user?.email,
         userName: user?.userName,
+        image: user?.profilePic,
       },
       recentActivities: activities,
       financialOverview:

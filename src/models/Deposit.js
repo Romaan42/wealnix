@@ -7,8 +7,7 @@ const DepositSchema = new mongoose.Schema(
     amountWX: { type: Number, required: true }, // PKR / 100
     method: {
       type: String,
-      enum: ["jazzcash", "easypaisa", "usdt", "bank"],
-      default: "jazzcash",
+      required: true,
     },
     trxId: { type: String }, // JazzCash/EasyPaisa Txn ID user dega
     screenshot: { type: String }, // Proof image url
