@@ -109,12 +109,6 @@ export default function Dashboard({ setSidebarOpen }) {
       {/* Header */}
       <div className="flex justify-between items-center mb-8 bg-white px-6 py-4 rounded-2xl border shadow-sm">
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => setSidebarOpen?.(true)}
-            className="lg:hidden p-2.5 bg-gray-50 rounded-xl border"
-          >
-            <Menu size={20} />
-          </button>
           <div>
             <h2 className="text-[20px] font-bold text-[#0f172a]">Dashboard</h2>
             <p className="text-[12px] text-gray-400">

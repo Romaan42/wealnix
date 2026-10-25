@@ -81,7 +81,7 @@ export default function ProfilePage() {
 
   if (loading)
     return (
-      <div className="p-10 flex justify-center bg-[#f5f7fb] min-h-screen">
+      <div className="p-10 w-full flex justify-center bg-[#f5f7fb] min-h-screen">
         <div className="w-8 h-8 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );

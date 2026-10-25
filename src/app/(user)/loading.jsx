@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f7fb] fixed inset-0 z-[9999] overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f5f7fb] fixed inset-0 z-[9999] overflow-hidden">
       {/* Subtle BG Glow */}
       <div className="absolute w-[400px] h-[400px] bg-[#1E3A8A]/10 rounded-full blur-[100px] -top-20 -left-20"></div>
       <div className="absolute w-[400px] h-[400px] bg-[#C5A059]/10 rounded-full blur-[100px] -bottom-20 -right-20"></div>
