@@ -54,10 +54,7 @@ export default function NetworkSummaryPage() {
           </p>
           <h3 className="text-2xl font-bold">{data.direct}</h3>
         </div>
-        <div className="bg-[#1E3A8A] rounded-2xl p-5 text-white">
-          <p className="text-[11px] text-white/60 uppercase">E-Wallet (80%)</p>
-          <h3 className="text-2xl font-bold">WX$ {data.eWallet}</h3>
-        </div>
+
         <div className="bg-[#C5A059] rounded-2xl p-5 text-white">
           <p className="text-[11px] text-white/80 uppercase">
             Total Commission

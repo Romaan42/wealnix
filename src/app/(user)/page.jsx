@@ -147,12 +147,6 @@ export default function Dashboard({ setSidebarOpen }) {
               PKR {((wallet.eWallet || 0) * 100).toLocaleString()}
             </p>
           </div>
-          <button
-            onClick={() => router.push("/withdraw")}
-            className="mt-4 w-full bg-[#C5A059] hover:bg-[#b8944f] text-white py-2.5 rounded-xl text-[11px] font-bold"
-          >
-            Withdraw funds
-          </button>
         </div>
 
         <div className="bg-white rounded-[22px] border p-5 shadow-sm flex flex-col justify-between">

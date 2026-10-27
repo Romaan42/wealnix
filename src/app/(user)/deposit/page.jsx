@@ -80,7 +80,20 @@ const BUNDLES = [
 
 export default function DepositGatewayPage() {
   const { user, userLoading } = useSelector((state) => state.user);
-
+  const methods = [
+    {
+      id: "Nayapay",
+      name: "Muhammad talha",
+      desc: "Pay via Nayapay",
+      acc: "03439204893",
+    },
+    {
+      id: "Easypaisa",
+      name: "Muhammad talha",
+      desc: "Pay via EasyPaisa • Instant",
+      acc: "03149058865",
+    },
+  ];
   const [data, setData] = useState({
     wallet: { eWallet: 0, sWallet: 0 },
     history: [],
@@ -89,7 +102,7 @@ export default function DepositGatewayPage() {
   const [image, setImage] = useState(null);
   const [selectedBundle, setSelectedBundle] = useState(BUNDLES[2]); // Default Gold
   const [amountPKR, setAmountPKR] = useState(10000);
-  const [method, setMethod] = useState("jazzcash");
+  const [method, setMethod] = useState(methods[0].id);
   const [trxId, setTrxId] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -168,21 +181,6 @@ export default function DepositGatewayPage() {
       </div>
     );
   }
-
-  const methods = [
-    {
-      id: "Nayapay",
-      name: "Muhammad talha",
-      desc: "Pay via Nayapay",
-      acc: "03439204893",
-    },
-    {
-      id: "Easypaisa",
-      name: "Muhammad talha",
-      desc: "Pay via EasyPaisa • Instant",
-      acc: "03149058865",
-    },
-  ];
 
   return (
     <div className="p-4 w-full lg:p-6 space-y-6 bg-[#f5f7fb] min-h-screen">

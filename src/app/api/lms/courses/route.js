@@ -39,38 +39,24 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     await connectDb();
-    const body = await req.json();
-
-    if (!body.thumbnailPublicId) throw new Error("Thumbnail required");
+    const { title, link, description, thumbnail, rankRequired, category } =
+      await req.json();
 
     const slug =
-      body.title
+      title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "") +
       "-" +
       Date.now().toString().slice(-4);
 
-    // Clean lessons: sirf publicId save karo as main
-    const cleanLessons = body.lessons.map((l) => ({
-      title: l.title,
-      publicId: l.publicId, // MAIN FIELD
-      videoUrl: l.videoUrl, // backup
-      duration: l.duration || "0:00",
-      isFree: l.isFree,
-      content: l.content || "",
-    }));
-
     const course = await Course.create({
-      title: body.title,
+      title,
+      link,
       slug,
-      description: body.description,
-      thumbnail: body.thumbnail,
-      thumbnailPublicId: body.thumbnailPublicId, // MAIN
-      rankRequired: body.rankRequired,
-      bundleRequired: body.bundleRequired,
-      lessons: cleanLessons,
-      totalLessons: cleanLessons.length,
+      description,
+      thumbnail,
+      rankRequired,
     });
 
     return Response.json({ success: true, course });

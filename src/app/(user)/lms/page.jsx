@@ -1,26 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { CldImage } from "next-cloudinary";
-import { Loader2, Play } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function LMSPortal() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [progressMap, setProgressMap] = useState({}); // user progress
-
+  const [category, setCategory] = useState("all");
+  console.log(category);
   useEffect(() => {
     const load = async () => {
       try {
-        // 1. Courses fetch
         const res = await fetch("/api/lms/courses");
         const data = await res.json();
-
-        // 2. User progress fetch (agar tumhare paas hai to)
-        // const progressRes = await fetch("/api/lms/my-progress");
-        // const progressData = await progressRes.json();
-        // setProgressMap(progressData.map || {});
-
         setCourses(data.courses || []);
       } catch (e) {
         console.error(e);
@@ -55,6 +47,20 @@ export default function LMSPortal() {
             R
           </div>
         </div>
+        <div>
+          <select
+            onChange={(e) => setCategory(e.target.value)}
+            className="p-2 w-full border border-gray-300 mb-10 bg-white rounded-2xl"
+            name="category"
+            id="category"
+          >
+            <option value="courses">Courses</option>
+            <option value="Software and Tools">Software and Tools</option>
+            <option value="Mobile Softwares">Mobile Softwares</option>
+            <option value="themes">Mobile Softwares</option>
+            <option value="reels">Reels</option>
+          </select>
+        </div>
 
         {/* COURSES GRID */}
         {courses.length === 0 ? (
@@ -67,15 +73,14 @@ export default function LMSPortal() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {courses.map((c) => {
-              const progress = progressMap[c._id] || 0; // 0-100
               return (
-                <Link key={c._id} href={`/lms/${c.slug}`} className="group">
+                <a key={c._id} href={c.link} target="_blank" className="group">
                   <div className="bg-white border border-black rounded-[20px] p-4 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all">
                     <div className="relative">
                       {/* REAL CldImage */}
-                      {c.thumbnailPublicId ? (
+                      {c.thumbnail ? (
                         <CldImage
-                          src={c.thumbnailPublicId}
+                          src={c.thumbnail}
                           width={400}
                           height={225}
                           crop="fill"
@@ -90,31 +95,21 @@ export default function LMSPortal() {
                           alt={c.title}
                         />
                       )}
-                      <span className="absolute top-3 right-3 bg-[#FDE9B3] text-black text-xs font-semibold px-3 py-1 rounded-full border border-black">
+                      {/* <span className="absolute top-3 right-3 bg-[#FDE9B3] text-black text-xs font-semibold px-3 py-1 rounded-full border border-black">
                         {c.rankRequired}
-                      </span>
-                      <div className="absolute bottom-3 left-3 bg-black/80 text-white text-[11px] px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <Play className="w-3 h-3" />{" "}
-                        {c.totalLessons || c.lessons?.length || 0} lessons
-                      </div>
+                      </span> */}
                     </div>
                     <div className="pt-4">
                       <h3 className="font-bold text-[15px] text-black group-hover:text-[#23408F] transition line-clamp-1">
                         {c.title}
                       </h3>
-                      <div className="mt-3 h-2 w-full bg-[#E5E7EB] rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#C9A24C] transition-all"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
+
                       <p className="text-xs mt-2 text-black font-medium">
-                        {progress}% complete •{" "}
-                        {c.totalLessons || c.lessons?.length || 0} lessons
+                        {c.description}
                       </p>
                     </div>
                   </div>
-                </Link>
+                </a>
               );
             })}
           </div>

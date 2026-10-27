@@ -2,47 +2,83 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { CldUploadWidget, CldImage } from "next-cloudinary";
-import { Plus, Trash2, Loader2, Save, Upload, ArrowLeft } from "lucide-react";
+import { Loader2, Save, Upload, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 const UPLOAD_PRESET = "wealnix_lms";
+
+const BUNDLES = [
+  {
+    id: 20,
+    name: "Digital Foundation Program (DFP)",
+    priceWX: 20,
+    pricePKR: 2000,
+    vp: 2,
+    color: "border-gray-300",
+    bg: "bg-gray-50",
+    desc: "Basic Personal Access",
+  },
+  {
+    id: 50,
+    name: "Professional Certification Program (PCP)",
+    priceWX: 50,
+    pricePKR: 5000,
+    vp: 5,
+    color: "border-slate-400",
+    bg: "bg-slate-50",
+    desc: "Standard Resell Rights",
+  },
+  {
+    id: 100,
+    name: "Advanced Digital Program (ADP)",
+    priceWX: 100,
+    pricePKR: 10000,
+    vp: 10,
+    color: "border-[#C5A059]",
+    bg: "bg-[#C5A059]/10",
+    desc: "Master Resell Rights (MRR)",
+    popular: true,
+  },
+  {
+    id: 150,
+    name: "Digital Management Program (DMP)",
+    priceWX: 150,
+    pricePKR: 15000,
+    vp: 15,
+    color: "border-purple-400",
+    bg: "bg-purple-50",
+    desc: "Full White Label Rights",
+  },
+  {
+    id: 200,
+    name: "Digital Corporate Program (DCP)",
+    priceWX: 200,
+    pricePKR: 20000,
+    vp: 20,
+    color: "border-cyan-400",
+    bg: "bg-cyan-50",
+    desc: "White Label + Agency Master",
+  },
+];
 
 export default function EditCourse() {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(null);
-
-  const getInfo = (result) =>
-    typeof result.info === "string" ? JSON.parse(result.info) : result.info;
+  const [thumbnail, setThumbnail] = useState(null);
 
   useEffect(() => {
     const fetchCourse = async () => {
       const res = await fetch(`/api/lms/courses/${id}`);
       const data = await res.json();
       setForm(data.course);
+      console.log(data);
+      setThumbnail(data.course.thumbnail);
       setLoading(false);
     };
     if (id) fetchCourse();
   }, [id]);
-
-  const addLesson = () =>
-    setForm({
-      ...form,
-      lessons: [
-        ...form.lessons,
-        {
-          title: "",
-          videoUrl: "",
-          publicId: "",
-          duration: "",
-          isFree: false,
-          content: "",
-        },
-      ],
-    });
-  const removeLesson = (i) =>
-    setForm({ ...form, lessons: form.lessons.filter((_, idx) => idx !== i) });
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -105,6 +141,13 @@ export default function EditCourse() {
               className="w-full border border-black rounded-xl p-3 text-sm"
               placeholder="Course Title"
             />
+            <input
+              required
+              value={form.link}
+              onChange={(e) => setForm({ ...form, link: e.target.value })}
+              className="w-full border border-black rounded-xl p-3 text-sm"
+              placeholder="Course Title"
+            />
             <textarea
               required
               value={form.description}
@@ -123,12 +166,9 @@ export default function EditCourse() {
                 }
                 className="w-full border border-black rounded-xl p-3 text-sm bg-white"
               >
-                <option>Beginner</option>
-                <option>Bronze</option>
-                <option>Silver</option>
-                <option>Gold</option>
-                <option>Platinum</option>
-                <option>Diamond</option>
+                {BUNDLES.map((val, i) => (
+                  <option key={i}>{val.name}</option>
+                ))}
               </select>
               <input
                 type="number"
@@ -152,12 +192,7 @@ export default function EditCourse() {
                     resourceType: "image",
                   }}
                   onSuccess={(result) => {
-                    const info = getInfo(result);
-                    setForm({
-                      ...form,
-                      thumbnail: info.secure_url,
-                      thumbnailPublicId: info.public_id,
-                    });
+                    setThumbnail(result.info.secure_url);
                   }}
                 >
                   {({ open }) => (
@@ -175,12 +210,12 @@ export default function EditCourse() {
                     </button>
                   )}
                 </CldUploadWidget>
-                {form.thumbnailPublicId && (
+                {thumbnail && (
                   <div className="border border-black rounded-xl overflow-hidden">
                     <CldImage
                       width={200}
                       height={120}
-                      src={form.thumbnailPublicId}
+                      src={thumbnail}
                       alt="thumb"
                       className="w-40 h-20 object-cover"
                     />
@@ -192,113 +227,6 @@ export default function EditCourse() {
                   ✓ {form.thumbnailPublicId}
                 </p>
               )}
-            </div>
-          </div>
-
-          <div className="bg-white border border-black rounded-[20px] p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold">2. Lessons ({form.lessons.length})</h3>
-              <button
-                type="button"
-                onClick={addLesson}
-                className="text-xs px-3 py-1.5 bg-black text-white rounded-full flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" /> Add Lesson
-              </button>
-            </div>
-            <div className="space-y-4">
-              {form.lessons.map((lesson, idx) => (
-                <div
-                  key={idx}
-                  className="border border-black rounded-xl p-4 bg-[#F9FAFB]"
-                >
-                  <div className="flex justify-between mb-3">
-                    <span className="text-sm font-bold">Lesson {idx + 1}</span>
-                    <div className="flex gap-2 items-center">
-                      <label className="text-xs flex gap-1">
-                        <input
-                          type="checkbox"
-                          checked={lesson.isFree}
-                          onChange={(e) => {
-                            const nl = [...form.lessons];
-                            nl[idx].isFree = e.target.checked;
-                            setForm({ ...form, lessons: nl });
-                          }}
-                        />{" "}
-                        Free
-                      </label>
-                      <button type="button" onClick={() => removeLesson(idx)}>
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                  <input
-                    required
-                    value={lesson.title}
-                    onChange={(e) => {
-                      const nl = [...form.lessons];
-                      nl[idx].title = e.target.value;
-                      setForm({ ...form, lessons: nl });
-                    }}
-                    placeholder="Lesson title"
-                    className="w-full border border-black rounded-lg p-2.5 text-sm mb-2"
-                  />
-                  <div className="grid md:grid-cols-2 gap-2">
-                    <CldUploadWidget
-                      uploadPreset={UPLOAD_PRESET}
-                      signatureEndpoint="/api/cloudinary/sign"
-                      options={{
-                        folder: "wealnix/lms/videos",
-                        resourceType: "video",
-                      }}
-                      onSuccess={(result) => {
-                        const info = getInfo(result);
-                        const nl = [...form.lessons];
-                        nl[idx].videoUrl = info.secure_url;
-                        nl[idx].publicId = info.public_id;
-                        setForm({ ...form, lessons: nl });
-                      }}
-                    >
-                      {({ open }) => (
-                        <button
-                          type="button"
-                          onClick={() => open()}
-                          className="border border-dashed border-black rounded-lg p-3 text-xs bg-white hover:bg-gray-50"
-                        >
-                          {lesson.publicId
-                            ? "✓ Video Uploaded - Change"
-                            : "Upload Video"}
-                        </button>
-                      )}
-                    </CldUploadWidget>
-                    <input
-                      value={lesson.duration}
-                      onChange={(e) => {
-                        const nl = [...form.lessons];
-                        nl[idx].duration = e.target.value;
-                        setForm({ ...form, lessons: nl });
-                      }}
-                      placeholder="12:45"
-                      className="border border-black rounded-lg p-2.5 text-sm"
-                    />
-                  </div>
-                  {lesson.publicId && (
-                    <p className="text-[10px] text-green-600 mt-1 truncate">
-                      ID: {lesson.publicId}
-                    </p>
-                  )}
-                  <textarea
-                    value={lesson.content || ""}
-                    onChange={(e) => {
-                      const nl = [...form.lessons];
-                      nl[idx].content = e.target.value;
-                      setForm({ ...form, lessons: nl });
-                    }}
-                    placeholder="Lesson notes"
-                    className="mt-2 w-full border border-black rounded-lg p-2.5 text-sm h-16"
-                  />
-                </div>
-              ))}
             </div>
           </div>
 
