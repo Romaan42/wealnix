@@ -70,12 +70,6 @@ export default function ReferralsPage() {
       {/* Referral Link Card */}
       <div className="bg-gradient-to-br from-[#1E3A8A] to-[#2d4ab5] rounded-2xl p-6 text-white shadow-lg">
         <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-lg font-bold">Your Referral Link</h2>
-            <p className="text-[11px] text-white/60 mt-1 uppercase tracking-widest">
-              Share & Earn 10% Direct Commission
-            </p>
-          </div>
           <div className="bg-white/10 p-2 rounded-xl">
             <QrCode size={20} className="text-[#C5A059]" />
           </div>

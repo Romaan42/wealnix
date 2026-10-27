@@ -15,6 +15,7 @@ import {
 import PagesLoader from "@/components/PagesLoader";
 import toast from "react-hot-toast";
 import { CldImage, CldUploadWidget } from "next-cloudinary";
+import { useSelector } from "react-redux";
 
 const WX_RATE = 100;
 
@@ -78,6 +79,8 @@ const BUNDLES = [
 ];
 
 export default function DepositGatewayPage() {
+  const { user, userLoading } = useSelector((state) => state.user);
+
   const [data, setData] = useState({
     wallet: { eWallet: 0, sWallet: 0 },
     history: [],
@@ -156,7 +159,15 @@ export default function DepositGatewayPage() {
     }
   };
 
-  if (loading) return <PagesLoader />;
+  if (loading || userLoading) return <PagesLoader />;
+
+  if (user.currentBundle) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <h1>you are already deposited</h1>
+      </div>
+    );
+  }
 
   const methods = [
     {
@@ -177,10 +188,7 @@ export default function DepositGatewayPage() {
     <div className="p-4 w-full lg:p-6 space-y-6 bg-[#f5f7fb] min-h-screen">
       <div className="bg-[#1E3A8A] rounded-2xl p-6 text-white">
         <h2 className="text-xl font-bold">Deposit Gateway - Bundle Purchase</h2>
-        <p className="text-[11px] text-white/60 uppercase tracking-widest mt-1">
-          eWallet: {data.wallet.eWallet} WX$ • sWallet: {data.wallet.sWallet}{" "}
-          WX$ • 1 WX$ = {WX_RATE} PKR
-        </p>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <div className="bg-white rounded-2xl p-5 text-black">
             <DollarSign size={18} className="text-[#1E3A8A]" />
