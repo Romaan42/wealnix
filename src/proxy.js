@@ -20,6 +20,7 @@ export async function proxy(request) {
   // Admin routes
   if (url.startsWith("/admin")) {
     const admin = await checkAdminLogin();
+
     if (!admin) {
       return NextResponse.redirect(new URL("/admin-login", request.url));
     }

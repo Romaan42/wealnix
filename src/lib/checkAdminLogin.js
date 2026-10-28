@@ -14,7 +14,7 @@ const checkAdminLogin = async () => {
 
     return true;
   } catch (error) {
-    return true;
+    return null;
   }
 };
 
