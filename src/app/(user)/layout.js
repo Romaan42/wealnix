@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import StoreProvider from "./storeProvider";
 
 export const metadata = {
-  title: "WEALNIX | BY ROMAN",
+  title: "WEALNIX | private limited",
   description: "buy the digital products",
 };
 

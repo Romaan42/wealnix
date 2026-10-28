@@ -122,6 +122,13 @@ export default function ProfilePage() {
     </CldUploadWidget>
   );
 
+  if (user.kycStatus === "verified") {
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <h1>Kyc is completed</h1>
+      </div>
+    );
+  }
   return (
     <div className="p-4 w-full lg:p-6 space-y-6 bg-[#f5f7fb] min-h-screen">
       {/* Top Blue Card */}

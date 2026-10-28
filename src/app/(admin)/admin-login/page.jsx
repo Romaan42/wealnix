@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-[#0f1115] flex items-center justify-center p-4">
       <Toaster position="top-right" />
-      <div className="w-full max-w-md bg-white rounded-[24px] p-8 shadow-2xl">
+      <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black tracking-widest">WEALNEX</h1>
           <p className="text-[11px] text-gray-400 tracking-[0.3em] uppercase mt-1">
