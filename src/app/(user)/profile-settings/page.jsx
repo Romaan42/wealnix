@@ -122,13 +122,13 @@ export default function ProfilePage() {
     </CldUploadWidget>
   );
 
-  if (user.kycStatus === "verified") {
-    return (
-      <div className="w-full h-screen flex justify-center items-center">
-        <h1>Kyc is completed</h1>
-      </div>
-    );
-  }
+  // if (user.kycStatus === "verified") {
+  //   return (
+  //     <div className="w-full h-screen flex justify-center items-center">
+  //       <h1>Kyc is completed</h1>
+  //     </div>
+  //   );
+  // }
   return (
     <div className="p-4 w-full lg:p-6 space-y-6 bg-[#f5f7fb] min-h-screen">
       {/* Top Blue Card */}
@@ -352,23 +352,39 @@ export default function ProfilePage() {
                 <label className="text-xs font-bold mb-2 block">
                   CNIC Front Side
                 </label>
-                <UploadCard
-                  label="Front Side"
-                  value={form.cnicFront}
-                  field="cnicFront"
-                  folder="cnic"
-                />
+                {user.kycStatus === "verified" ? (
+                  <img
+                    className="w-full h-32 object-cover rounded-lg"
+                    src={form.cnicFront}
+                    alt="cnic"
+                  />
+                ) : (
+                  <UploadCard
+                    label="Front Side"
+                    value={form.cnicFront}
+                    field="cnicFront"
+                    folder="cnic"
+                  />
+                )}
               </div>
               <div>
                 <label className="text-xs font-bold mb-2 block">
                   CNIC Back Side
                 </label>
-                <UploadCard
-                  label="Back Side"
-                  value={form.cnicBack}
-                  field="cnicBack"
-                  folder="cnic"
-                />
+                {user.kycStatus === "verified" ? (
+                  <img
+                    className="w-full h-32 object-cover rounded-lg"
+                    src={form.cnicBack}
+                    alt="cnic"
+                  />
+                ) : (
+                  <UploadCard
+                    label="Back Side"
+                    value={form.cnicBack}
+                    field="cnicBack"
+                    folder="cnic"
+                  />
+                )}
               </div>
             </div>
           </div>
