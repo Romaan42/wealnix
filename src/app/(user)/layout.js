@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import StoreProvider from "./storeProvider";
 
 export const metadata = {
-  title: "WEALNIX | private limited",
+  title: "WEALNEX | private limited",
   description: "buy the digital products",
 };
 
