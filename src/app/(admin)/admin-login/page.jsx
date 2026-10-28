@@ -1,9 +1,7 @@
-// app/admin/login/page.jsx
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { adminLogin } from "@/actions/adminActions";
 
 export default function AdminLoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -12,30 +10,41 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Ye refresh rokta hai
     if (!identifier || !password) {
       toast.error("Username/Email and password required");
       return;
     }
+
     setLoading(true);
-    toast.loading("Verifying admin credentials...", {
-      id: "admin-login",
-    });
-    const result = await adminLogin({ userName: identifier, password });
-    setLoading(false);
-    if (result.success) {
-      toast.dismiss(); // purane loading toast hatao
-      toast.success(result.message || "Welcome Admin! Redirecting...", {
-        duration: 2000,
-        icon: "👑",
+    toast.loading("Verifying admin credentials...", { id: "admin-login" });
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: identifier, password }),
       });
 
-      router.push("/admin");
-    } else {
-      toast.dismiss();
-      toast.error(result.message, {
-        duration: 4000,
-      });
+      const result = await res.json();
+
+      if (result.success) {
+        toast.success(result.message || "Welcome Admin! Redirecting...", {
+          id: "admin-login", // same ID se loading replace hoga
+          duration: 2000,
+          icon: "👑",
+        });
+        router.push("/admin");
+      } else {
+        toast.error(result.message || "Login failed", {
+          id: "admin-login",
+          duration: 4000,
+        });
+      }
+    } catch (err) {
+      toast.error("Server error", { id: "admin-login" });
+    } finally {
+      setLoading(false);
     }
   };
 
