@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import checkAdminLogin from "./lib/checkAdminLogin";
 import checkUserLogin from "./lib/checkUserLogin";
+import { checkAdminLoginProxy } from "./lib/checkAdminLoginProxy";
 
 export async function proxy(request) {
   const url = request.nextUrl.pathname;
@@ -19,7 +20,7 @@ export async function proxy(request) {
 
   // Admin routes
   if (url.startsWith("/admin")) {
-    const admin = await checkAdminLogin();
+    const admin = await checkAdminLoginProxy();
 
     if (!admin) {
       return NextResponse.redirect(new URL("/admin-login", request.url));
