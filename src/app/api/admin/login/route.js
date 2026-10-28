@@ -47,11 +47,7 @@ export const POST = async (request) => {
     });
 
     response.cookies.set("adminToken", token, {
-      httpOnly: true,
-      secure: true, // Vercel pe hamesha true rakho, NODE_ENV check mat karo
-      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60,
-      path: "/",
     });
 
     return response;

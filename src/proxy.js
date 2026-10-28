@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-
-import checkAdminLogin from "./lib/checkAdminLogin";
 import checkUserLogin from "./lib/checkUserLogin";
 import { checkAdminLoginProxy } from "./lib/checkAdminLoginProxy";
 
