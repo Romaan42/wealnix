@@ -63,6 +63,7 @@ export default function AdminCourseUpload() {
   const [form, setForm] = useState({
     title: "",
     link: "",
+    category: "",
     description: "",
     rankRequired: "Beginner",
     bundleRequired: 0,
@@ -121,6 +122,13 @@ export default function AdminCourseUpload() {
               onChange={(e) => setForm({ ...form, link: e.target.value })}
               className="w-full border border-black rounded-xl p-3 text-sm"
               placeholder="Course link"
+            />
+            <input
+              required
+              value={form.category}
+              onChange={(e) => setForm({ ...form, link: e.target.value })}
+              className="w-full border border-black rounded-xl p-3 text-sm"
+              placeholder="category"
             />
             <textarea
               required
